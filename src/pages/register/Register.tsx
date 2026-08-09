@@ -1,6 +1,7 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import {
   apple,
+  chungbukFarmerLogo,
   kakao,
   naver,
   signupEllipseWide,
@@ -8,7 +9,8 @@ import {
   signupMountainLarge,
   signupMountainSmall,
 } from "../../assets/assets";
-import { api } from "../../services/api";
+import Button from "../../components/common/button/Button";
+import { hasMockUser, savePendingRegisterUser } from "../../services/mockAuth";
 
 const socialButtons = [
   { label: "네이버로 회원가입", image: naver },
@@ -20,11 +22,27 @@ const socialButtons = [
 const pageClass =
   "min-h-screen bg-[#1f1f1f] text-[#251f1f] sm:flex sm:items-center sm:justify-center sm:px-4 sm:py-8";
 const screenClass =
-  "relative mx-auto h-[874px] w-full max-w-[402px] overflow-hidden bg-gradient-to-b from-[#cdf2fb] via-[#eef7eb] via-[54%] to-white px-[25px] pb-[28px] pt-[57px] shadow-2xl max-[360px]:px-5";
+  "relative mx-auto flex min-h-[100svh] w-full max-w-[402px] flex-col overflow-hidden bg-gradient-to-b from-[#cdf2fb] via-[#eef7eb] via-[54%] to-white px-[25px] pb-[28px] pt-[57px] shadow-2xl max-[360px]:px-5";
 const inputClass =
   "h-[51px] w-full rounded-[12px] border border-[#acacac] bg-transparent px-[19px] text-[14px] text-[#251f1f] outline-none placeholder:text-[12px] placeholder:text-[#756b6b] focus:border-[#91ad43] focus:ring-2 focus:ring-[#d3f28c]";
 const textButtonClass =
   "cursor-pointer border-0 bg-transparent p-0 text-inherit";
+const introFadeMs = 1400;
+const primaryButtonProps = {
+  width: "100%",
+  height: "66px",
+  borderRadius: "12px",
+  backgroundColor: "#cfea89",
+  hoverColor: "#c4e675",
+  hoverFontColor: "#000000",
+  border: "1px solid #b4cd74",
+  fontColor: "#000000",
+  fontSize: "20px",
+  margin: "22px 0 0",
+  style: {
+    boxShadow: "0 7px 9.7px rgba(0, 0, 0, 0.15)",
+  },
+};
 
 interface RegisterProps {
   onLoginClick?: () => void;
@@ -32,6 +50,8 @@ interface RegisterProps {
 }
 
 function Register({ onLoginClick, onRegisterComplete }: RegisterProps) {
+  const [introActive, setIntroActive] = useState(false);
+  const [showLogo, setShowLogo] = useState(false);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -41,6 +61,21 @@ function Register({ onLoginClick, onRegisterComplete }: RegisterProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+
+  useEffect(() => {
+    const animationFrame = window.requestAnimationFrame(() => {
+      setIntroActive(true);
+    });
+
+    const logoTimer = window.setTimeout(() => {
+      setShowLogo(true);
+    }, introFadeMs);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.clearTimeout(logoTimer);
+    };
+  }, []);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -60,27 +95,37 @@ function Register({ onLoginClick, onRegisterComplete }: RegisterProps) {
     setIsSaving(true);
 
     try {
-      await api.post("/auth/register", { email, name, password });
-      setSuccessMessage("회원가입이 완료되었습니다.");
+      if (await hasMockUser(email)) {
+        setErrorMessage("이미 가입된 아이디입니다.");
+        return;
+      }
+
+      savePendingRegisterUser({ email, name, password });
+      setSuccessMessage("추가 정보를 선택해 주세요.");
+      onRegisterComplete?.();
     } catch {
-      setSuccessMessage("회원가입이 완료되었습니다.");
+      setErrorMessage("임시 회원 저장 서버를 확인해 주세요.");
     } finally {
       setIsSaving(false);
-      onRegisterComplete?.();
     }
   };
 
   return (
     <main className={pageClass}>
       <section className={screenClass} aria-labelledby="register-title">
-        <div
-          className="absolute right-[25px] top-[57px] h-[63px] w-[71px] bg-[#d9d9d9]"
-          aria-hidden="true"
+        <img
+          src={chungbukFarmerLogo}
+          alt="충북 농부 로고"
+          className={`pointer-events-none absolute right-[25px] top-[46px] h-[41px] w-[92px] transition-opacity duration-300 ${
+            showLogo ? "opacity-100" : "opacity-0"
+          }`}
         />
 
         <h1
           id="register-title"
-          className="m-0 whitespace-pre-line text-[28px] font-medium leading-[1.18] text-[#454c4e]"
+          className={`mt-[52px] w-[286px] whitespace-pre-line text-[28px] font-medium leading-[1.08] tracking-[-0.01em] text-[#454c4e] transition-opacity duration-[1250ms] ease-out ${
+            introActive ? "opacity-100" : "opacity-25"
+          }`}
         >
           안녕하세요{"\n"}도시농부 플러스* 입니다.
         </h1>
@@ -185,13 +230,9 @@ function Register({ onLoginClick, onRegisterComplete }: RegisterProps) {
             </p>
           ) : null}
 
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="mt-[22px] flex h-[66px] w-full cursor-pointer items-center justify-center rounded-[12px] border border-[#b4cd74] bg-[#cfea89] text-[20px] text-black shadow-[0_7px_9.7px_rgba(0,0,0,0.15)] transition hover:bg-[#c4e675] disabled:cursor-not-allowed disabled:bg-[#d6dfb8] disabled:text-[#6c6c6c]"
-          >
+          <Button type="submit" disabled={isSaving} {...primaryButtonProps}>
             {isSaving ? "가입 중..." : "회원가입"}
-          </button>
+          </Button>
         </form>
 
         <div className="mt-[22px] flex items-center justify-center gap-[12px] whitespace-nowrap text-[14px] text-[#251f1f] max-[360px]:gap-2 max-[360px]:text-[13px]">

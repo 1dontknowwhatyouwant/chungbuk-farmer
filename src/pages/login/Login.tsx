@@ -1,57 +1,99 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from "react";
 import {
   apple,
   kakao,
+  chungbukFarmerLogo,
   naver,
   signupEllipseWide,
   signupEye,
   signupMountainLarge,
   signupMountainSmall,
-} from '../../assets/assets';
-import { api } from '../../services/api';
-import { useAuthStore } from '../../stores/useAuthStore';
+} from "../../assets/assets";
+import Button from "../../components/common/button/Button";
+import { loginWithMockUser } from "../../services/mockAuth";
+import { useAuthStore } from "../../stores/useAuthStore";
 
 const socialLogins = [
-  { label: '네이버 로그인', image: naver },
-  { label: '카카오 로그인', image: kakao },
-  { label: 'Apple 로그인', image: apple },
-  { label: '추가 로그인', image: signupEllipseWide },
+  { label: "네이버 로그인", image: naver },
+  { label: "카카오 로그인", image: kakao },
+  { label: "Apple 로그인", image: apple },
+  { label: "추가 로그인", image: signupEllipseWide },
 ];
 
 const pageClass =
-  'min-h-screen bg-[#1f1f1f] text-[#251f1f] sm:flex sm:items-center sm:justify-center sm:px-4 sm:py-8';
+  "min-h-screen bg-[#1f1f1f] text-[#251f1f] sm:flex sm:items-center sm:justify-center sm:px-4 sm:py-8";
 const screenClass =
-  'relative mx-auto h-[874px] w-full max-w-[402px] overflow-hidden bg-gradient-to-b from-[#cdf2fb] via-[#eef7eb] via-[54%] to-white px-[25px] pb-[28px] pt-[57px] shadow-2xl max-[360px]:px-5';
+  "relative mx-auto flex min-h-[100svh] w-full max-w-[402px] flex-col overflow-hidden bg-gradient-to-b from-[#cdf2fb] via-[#eef7eb] via-[54%] to-white px-[25px] pb-[28px] pt-[57px] shadow-2xl max-[360px]:px-5";
 const inputClass =
-  'h-[51px] w-full rounded-[12px] border border-[#acacac] bg-transparent px-[19px] text-[14px] text-[#251f1f] outline-none placeholder:text-[12px] placeholder:text-[#756b6b] focus:border-[#91ad43] focus:ring-2 focus:ring-[#d3f28c]';
-const textButtonClass = 'cursor-pointer border-0 bg-transparent p-0 text-inherit';
+  "h-[51px] w-full rounded-[12px] border border-[#acacac] bg-transparent px-[19px] text-[14px] text-[#251f1f] outline-none placeholder:text-[12px] placeholder:text-[#756b6b] focus:border-[#91ad43] focus:ring-2 focus:ring-[#d3f28c]";
+const textButtonClass =
+  "cursor-pointer border-0 bg-transparent p-0 text-inherit";
+const introFadeMs = 1400;
+const primaryButtonProps = {
+  width: "100%",
+  height: "66px",
+  borderRadius: "12px",
+  backgroundColor: "#cfea89",
+  hoverColor: "#c4e675",
+  hoverFontColor: "#000000",
+  border: "1px solid #b4cd74",
+  fontColor: "#000000",
+  fontSize: "20px",
+  margin: "22px 0 0",
+  style: {
+    boxShadow: "0 7px 9.7px rgba(0, 0, 0, 0.15)",
+  },
+};
 
 interface LoginProps {
   onSignupClick?: () => void;
+  onLoginSuccess?: () => void;
 }
 
-function Login({ onSignupClick }: LoginProps) {
+function Login({
+  onSignupClick,
+  onLoginSuccess,
+}: LoginProps) {
   const setUser = useAuthStore((state) => state.setUser);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [introActive, setIntroActive] = useState(false);
+  const [showLogo, setShowLogo] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    const animationFrame = window.requestAnimationFrame(() => {
+      setIntroActive(true);
+    });
+
+    const logoTimer = window.setTimeout(() => {
+      setShowLogo(true);
+    }, introFadeMs);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.clearTimeout(logoTimer);
+    };
+  }, []);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setErrorMessage('');
+    setErrorMessage("");
     setIsSaving(true);
 
     try {
-      await api.post('/auth/login', { email, password });
+      const registeredUser = await loginWithMockUser(email, password);
+
       setUser({
-        email,
-        name: email.split('@')[0] || '농가 사용자',
+        email: registeredUser.email,
+        name: registeredUser.name,
       });
+      onLoginSuccess?.();
     } catch {
-      setErrorMessage('로그인 정보를 확인해 주세요.');
+      setErrorMessage("가입한 아이디와 비밀번호를 확인해 주세요.");
     } finally {
       setIsSaving(false);
     }
@@ -60,16 +102,21 @@ function Login({ onSignupClick }: LoginProps) {
   return (
     <main className={pageClass}>
       <section className={screenClass} aria-labelledby="login-title">
-        <div
-          className="absolute right-[25px] top-[57px] h-[63px] w-[71px] bg-[#d9d9d9]"
-          aria-hidden="true"
+        <img
+          src={chungbukFarmerLogo}
+          alt="충북 농부 로고"
+          className={`pointer-events-none absolute right-[25px] top-[46px] h-[41px] w-[92px] transition-opacity duration-300 ${
+            showLogo ? "opacity-100" : "opacity-0"
+          }`}
         />
 
         <h1
           id="login-title"
-          className="m-0 whitespace-pre-line text-[28px] font-medium leading-[1.18] text-[#454c4e]"
+          className={`mt-[52px] w-[286px] whitespace-pre-line text-[28px] font-medium leading-[1.08] tracking-[-0.01em] text-[#454c4e] transition-opacity duration-[1250ms] ease-out ${
+            introActive ? "opacity-100" : "opacity-25"
+          }`}
         >
-          안녕하세요{'\n'}도시농부 플러스* 입니다.
+          안녕하세요{"\n"}도시농부 플러스* 입니다.
         </h1>
 
         <form className="relative z-10 mt-[62px]" onSubmit={handleSubmit}>
@@ -94,7 +141,7 @@ function Login({ onSignupClick }: LoginProps) {
               </span>
               <span className="relative block">
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="비밀번호(영문+숫자 6~16자)"
@@ -105,7 +152,9 @@ function Login({ onSignupClick }: LoginProps) {
                 />
                 <button
                   type="button"
-                  aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
+                  aria-label={
+                    showPassword ? "비밀번호 숨기기" : "비밀번호 보기"
+                  }
                   className="absolute right-[16px] top-1/2 flex h-[24px] w-[24px] -translate-y-1/2 cursor-pointer items-center justify-center border-0 bg-transparent p-0"
                   onClick={() => setShowPassword((current) => !current)}
                 >
@@ -123,7 +172,7 @@ function Login({ onSignupClick }: LoginProps) {
               className="peer sr-only"
             />
             <span className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[4px] bg-white text-[15px] font-bold leading-none text-[#6e8c16] peer-focus:ring-2 peer-focus:ring-[#cfea89]">
-              {rememberMe ? '✓' : ''}
+              {rememberMe ? "✓" : ""}
             </span>
             <span>자동 로그인</span>
           </label>
@@ -134,13 +183,9 @@ function Login({ onSignupClick }: LoginProps) {
             </p>
           ) : null}
 
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="mt-[22px] flex h-[66px] w-full cursor-pointer items-center justify-center rounded-[12px] border border-[#b4cd74] bg-[#cfea89] text-[20px] text-black shadow-[0_7px_9.7px_rgba(0,0,0,0.15)] transition hover:bg-[#c4e675] disabled:cursor-not-allowed disabled:bg-[#d6dfb8] disabled:text-[#6c6c6c]"
-          >
-            {isSaving ? '로그인 중...' : '로그인'}
-          </button>
+          <Button type="submit" disabled={isSaving} {...primaryButtonProps}>
+            {isSaving ? "로그인 중..." : "로그인"}
+          </Button>
         </form>
 
         <div className="mt-[22px] flex items-center justify-center gap-[12px] whitespace-nowrap text-[14px] text-[#251f1f] max-[360px]:gap-2 max-[360px]:text-[13px]">
