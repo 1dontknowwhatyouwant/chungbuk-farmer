@@ -4,3 +4,4 @@
 - Tailwind CSS
 - axios zustand
 - react-router-dom
+- Next.js
