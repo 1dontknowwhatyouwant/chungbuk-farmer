@@ -22,3 +22,6 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Backend API documentation copied from the backend repository
+/backend-docs/
