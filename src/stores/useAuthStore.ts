@@ -1,9 +1,5 @@
 import { create } from 'zustand';
-
-type User = {
-  email: string;
-  name: string;
-};
+import type { User } from '../services/api';
 
 type AuthState = {
   user: User | null;
@@ -14,5 +10,8 @@ type AuthState = {
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   setUser: (user) => set({ user }),
-  logout: () => set({ user: null }),
+  logout: () => {
+    if (typeof window !== 'undefined') window.localStorage.removeItem('chungbuk-farmer-access-token');
+    set({ user: null });
+  },
 }));

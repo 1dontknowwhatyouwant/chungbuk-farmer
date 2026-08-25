@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import Mypage from "../../components/Mypage/Mypage";
-import { deleteMockUser } from "../../services/mockAuth";
+import { authApi } from "../../services/api";
 import { useAuthStore } from "../../stores/useAuthStore";
 
 export default function MypagePage() {
@@ -13,7 +13,9 @@ export default function MypagePage() {
   const handleDeleteAccount = async () => {
     if (!user) return;
 
-    await deleteMockUser(user.email);
+    const password = window.prompt("탈퇴를 진행하려면 현재 비밀번호를 입력해 주세요.");
+    if (!password) return;
+    await authApi.withdrawal(password);
     logout();
     router.push("/login");
   };
@@ -22,7 +24,7 @@ export default function MypagePage() {
     <Mypage
       onDeleteAccount={handleDeleteAccount}
       onLogout={() => {
-        logout();
+        void authApi.logout().finally(logout);
         router.push("/login");
       }}
       onGoHome={() => router.push("/home")}

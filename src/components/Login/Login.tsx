@@ -12,7 +12,7 @@ import {
   signupMountainSmall,
 } from "../../assets/assets";
 import Button from "../common/button/Button";
-import { loginWithMockUser } from "../../services/mockAuth";
+import { authApi } from "../../services/api";
 import { useAuthStore } from "../../stores/useAuthStore";
 
 const socialLogins = [
@@ -59,7 +59,7 @@ function Login({
   const setUser = useAuthStore((state) => state.setUser);
   const [introActive, setIntroActive] = useState(false);
   const [showLogo, setShowLogo] = useState(false);
-  const [email, setEmail] = useState("");
+  const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -87,11 +87,11 @@ function Login({
     setIsSaving(true);
 
     try {
-      const registeredUser = await loginWithMockUser(email, password);
+      const { data } = await authApi.login(loginId, password);
+      window.localStorage.setItem("chungbuk-farmer-access-token", data.accessToken);
 
       setUser({
-        email: registeredUser.email,
-        name: registeredUser.name,
+        ...data.user,
       });
       onLoginSuccess?.();
     } catch {
@@ -128,10 +128,10 @@ function Login({
                 아이디
               </span>
               <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="아이디 또는 이메일 주소"
+                type="text"
+                value={loginId}
+                onChange={(event) => setLoginId(event.target.value)}
+                placeholder="아이디를 입력해 주세요"
                 required
                 className={inputClass}
               />
@@ -146,10 +146,10 @@ function Login({
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  placeholder="비밀번호(영문+숫자 6~16자)"
+                  placeholder="비밀번호(8~64자)"
                   required
-                  minLength={6}
-                  maxLength={16}
+                  minLength={8}
+                  maxLength={64}
                   className={`${inputClass} pr-14`}
                 />
                 <button

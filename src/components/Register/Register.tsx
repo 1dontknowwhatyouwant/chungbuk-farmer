@@ -12,7 +12,7 @@ import {
   signupMountainSmall,
 } from "../../assets/assets";
 import Button from "../common/button/Button";
-import { hasMockUser, savePendingRegisterUser } from "../../services/mockAuth";
+import { authApi } from "../../services/api";
 
 const socialButtons = [
   { label: "네이버로 회원가입", image: naver.src },
@@ -54,7 +54,7 @@ interface RegisterProps {
 function Register({ onLoginClick, onRegisterComplete }: RegisterProps) {
   const [introActive, setIntroActive] = useState(false);
   const [showLogo, setShowLogo] = useState(false);
-  const [email, setEmail] = useState("");
+  const [loginId, setLoginId] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -97,16 +97,17 @@ function Register({ onLoginClick, onRegisterComplete }: RegisterProps) {
     setIsSaving(true);
 
     try {
-      if (await hasMockUser(email)) {
-        setErrorMessage("이미 가입된 아이디입니다.");
+      const { data: idCheck } = await authApi.checkId(loginId);
+      if (!idCheck.available) {
+        setErrorMessage("이미 사용 중인 아이디입니다.");
         return;
       }
 
-      savePendingRegisterUser({ email, name, password });
+      window.localStorage.setItem("chungbuk-farmer-pending-user", JSON.stringify({ loginId, name, password }));
       setSuccessMessage("추가 정보를 선택해 주세요.");
       onRegisterComplete?.();
     } catch {
-      setErrorMessage("임시 회원 저장 서버를 확인해 주세요.");
+      setErrorMessage("아이디를 확인하거나 서버 연결 상태를 확인해 주세요.");
     } finally {
       setIsSaving(false);
     }
@@ -139,10 +140,11 @@ function Register({ onLoginClick, onRegisterComplete }: RegisterProps) {
                 아이디
               </span>
               <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="아이디 또는 이메일 주소"
+                type="text"
+                value={loginId}
+                onChange={(event) => setLoginId(event.target.value.toLowerCase())}
+                placeholder="영문 소문자·숫자·밑줄 4~30자"
+                pattern="[a-z0-9_]{4,30}"
                 required
                 className={inputClass}
               />
@@ -173,8 +175,8 @@ function Register({ onLoginClick, onRegisterComplete }: RegisterProps) {
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="비밀번호(영문+숫자 6~16자)"
                   required
-                  minLength={6}
-                  maxLength={16}
+                  minLength={8}
+                  maxLength={64}
                   className={`${inputClass} pr-14`}
                 />
                 <button
@@ -200,8 +202,8 @@ function Register({ onLoginClick, onRegisterComplete }: RegisterProps) {
                 onChange={(event) => setPasswordConfirm(event.target.value)}
                 placeholder="비밀번호를 다시 입력해 주세요"
                 required
-                minLength={6}
-                maxLength={16}
+                minLength={8}
+                maxLength={64}
                 className={inputClass}
               />
             </label>

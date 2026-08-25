@@ -2,17 +2,17 @@
 
 import { useState } from "react";
 import Button from "../common/button/Button";
-import {
-  completePendingRegisterUser,
-  MockUserRole,
-} from "../../services/mockAuth";
+import { authApi, type UserType } from "../../services/api";
 
 const pageClass =
   "min-h-screen bg-[#1f1f1f] text-[#251f1f] sm:flex sm:items-center sm:justify-center sm:px-4 sm:py-8";
 const screenClass =
   "relative mx-auto h-[874px] w-full max-w-[402px] overflow-hidden bg-gradient-to-b from-[#d9e9ed] to-white to-[95%] px-[25px] pt-[57px] shadow-2xl";
 
-const roleButtons: MockUserRole[] = ["농가", "교육이수자", "중개 센터"];
+const roleButtons = [
+  { label: "농가", userType: "FARM" as UserType },
+  { label: "교육이수자", userType: "URBAN_FARMER" as UserType },
+];
 const roleButtonProps = {
   width: "138px",
   height: "138px",
@@ -34,12 +34,16 @@ function RegisterDetail({ onComplete, onBackToRegister }: RegisterDetailProps) {
   const [errorMessage, setErrorMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleRoleClick = async (role: MockUserRole) => {
+  const handleRoleClick = async (userType: UserType) => {
     setErrorMessage("");
     setIsSaving(true);
 
     try {
-      await completePendingRegisterUser(role);
+      const pendingUser = window.localStorage.getItem("chungbuk-farmer-pending-user");
+      if (!pendingUser) throw new Error("pending user not found");
+      const parsed = JSON.parse(pendingUser) as { loginId: string; name: string; password: string };
+      await authApi.signup({ ...parsed, userType });
+      window.localStorage.removeItem("chungbuk-farmer-pending-user");
       onComplete?.();
     } catch {
       setErrorMessage("회원 정보를 저장하지 못했습니다. 처음부터 다시 시도해 주세요.");
@@ -86,13 +90,13 @@ function RegisterDetail({ onComplete, onBackToRegister }: RegisterDetailProps) {
         <div className="mt-[45px] flex flex-col items-center gap-[41px]">
           {roleButtons.map((role) => (
             <Button
-              key={role}
+              key={role.label}
               type="button"
               disabled={isSaving}
-              onClick={() => handleRoleClick(role)}
+              onClick={() => handleRoleClick(role.userType)}
               {...roleButtonProps}
             >
-              {role}
+              {role.label}
             </Button>
           ))}
         </div>
