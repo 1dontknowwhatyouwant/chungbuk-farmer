@@ -57,30 +57,30 @@ function Home({ onGoToMypage }: HomeProps) {
   return (
     <main className="min-h-screen bg-[#1f1f1f] sm:flex sm:items-center sm:justify-center sm:px-4 sm:py-8">
       <section
-        className="relative mx-auto h-[874px] w-full max-w-[402px] overflow-hidden bg-[linear-gradient(180deg,#CDF2FB_0%,#EEF7EB_53.79%,#FFFFFF_95.25%)]"
+        className="relative mx-auto min-h-[874px] w-full max-w-[402px] overflow-hidden bg-[linear-gradient(180deg,#CDF2FB_0%,#EEF7EB_53.79%,#FFFFFF_95.25%)]"
         style={{ fontFamily: "Pretendard, Inter, ui-sans-serif, system-ui, sans-serif" }}
       >
         <img
           src={homeLogo.src}
           alt="도시농부+"
-          className="pointer-events-none absolute left-[26px] top-[78px] h-[38px] w-[111px]"
+          className="pointer-events-none absolute left-[6.5%] top-[78px] h-[38px] w-[27.6%] object-contain object-left"
         />
         <button
           type="button"
-          className="absolute right-[49px] top-[78px] border-0 bg-transparent p-0"
+          className="absolute right-[12.2%] top-[78px] border-0 bg-transparent p-0"
           aria-label="알림"
         >
           <img src={homeAlarm.src} alt="" className="h-[54px] w-[54px]" />
         </button>
 
         <h1
-          className="absolute left-[25px] top-[137px] text-[24px] font-medium leading-[29px] text-[#475559]"
+          className="absolute left-[6.2%] top-[137px] text-[clamp(20px,6vw,24px)] font-medium leading-[29px] text-[#475559]"
         >
           농작물 시세 현황
         </h1>
 
         <div
-          className="absolute left-[60px] top-[180px] box-border h-[108px] w-[298px] rounded-[12px] border border-[#96B3E2] bg-[radial-gradient(63.89%_63.89%_at_50%_52.31%,#6FA3F6_0%,#2068DE_100%)]"
+          className="absolute left-[14.9%] top-[180px] box-border h-[108px] w-[74.1%] rounded-[12px] border border-[#96B3E2] bg-[radial-gradient(63.89%_63.89%_at_50%_52.31%,#6FA3F6_0%,#2068DE_100%)]"
         >
           <div className="pointer-events-none absolute left-[-32px] top-[-12px] h-[112px] w-[112px] overflow-visible">
             {cropImages.map((image, index) => (
@@ -123,13 +123,13 @@ function Home({ onGoToMypage }: HomeProps) {
         </div>
 
         <div
-          className="absolute left-[25px] top-[317px] text-[24px] font-medium leading-[29px] text-[#475559]"
+          className="absolute left-[6.2%] top-[317px] text-[clamp(20px,6vw,24px)] font-medium leading-[29px] text-[#475559]"
         >
           내 신청 현황
         </div>
 
         <div
-          className="box-border absolute left-[25px] top-[362px] h-[174px] w-[352px] rounded-[12px] border border-[rgba(215,228,183,0.42)] bg-[#FFFDFD] shadow-[0_2px_10.4px_rgba(0,0,0,0.28)]"
+          className="box-border absolute left-[6.2%] top-[362px] h-[174px] w-[87.6%] rounded-[12px] border border-[rgba(215,228,183,0.42)] bg-[#FFFDFD] shadow-[0_2px_10.4px_rgba(0,0,0,0.28)]"
         >
           <div
             className="box-border absolute left-[20px] top-[12px] h-[26px] w-[126px] rounded-[8px] border border-[#E8EAEC] bg-[rgba(217,217,217,0.22)]"
@@ -173,12 +173,12 @@ function Home({ onGoToMypage }: HomeProps) {
           </button>
         </div>
 
-        <div className="absolute left-[25px] top-[557px] text-[24px] font-medium leading-[29px] text-[#475559]">
+        <div className="absolute left-[6.2%] top-[557px] text-[clamp(20px,6vw,24px)] font-medium leading-[29px] text-[#475559]">
           교육 이수 상태
         </div>
 
         <div
-          className="box-border absolute left-[25px] top-[608px] h-[151px] w-[130px] rounded-[12px] border border-[#E3E3E3] bg-[#FFFCF9] shadow-[0_14px_10.8px_rgba(156,164,142,0.25)]"
+          className="box-border absolute left-[6.2%] top-[608px] h-[151px] w-[32.3%] rounded-[12px] border border-[#E3E3E3] bg-[#FFFCF9] shadow-[0_14px_10.8px_rgba(156,164,142,0.25)]"
         >
           <div className="absolute left-[18px] top-[12px] rounded-[9px] bg-[#ECF1F3] px-[10px] py-[2px] text-[12px] leading-[14px] text-[#243E45]">
             필수
@@ -195,7 +195,7 @@ function Home({ onGoToMypage }: HomeProps) {
         </div>
 
         <div
-          className="box-border absolute left-[171px] top-[608px] h-[151px] w-[130px] rounded-[12px] border border-[#E3E3E3] bg-[#FFFCF9] shadow-[0_14px_10.8px_rgba(156,164,142,0.25)]"
+          className="box-border absolute left-[42.5%] top-[608px] h-[151px] w-[32.3%] rounded-[12px] border border-[#E3E3E3] bg-[#FFFCF9] shadow-[0_14px_10.8px_rgba(156,164,142,0.25)]"
         >
           <div className="absolute left-[18px] top-[12px] rounded-[9px] bg-[#ECF1F3] px-[10px] py-[2px] text-[12px] leading-[14px] text-[#243E45]">
             필수
@@ -218,7 +218,7 @@ function Home({ onGoToMypage }: HomeProps) {
         </div>
 
         <nav
-          className="absolute left-[25px] top-[785px] box-border h-[77px] w-[352px] rounded-[35px] border border-[#F2F8E1] bg-[linear-gradient(180deg,rgba(248,253,234,0.44)_-25.32%,rgba(199,232,115,0.44)_100%)]"
+          className="absolute bottom-[12px] left-[6.2%] box-border h-[77px] w-[87.6%] rounded-[35px] border border-[#F2F8E1] bg-[linear-gradient(180deg,rgba(248,253,234,0.44)_-25.32%,rgba(199,232,115,0.44)_100%)]"
           aria-label="하단 메뉴"
         >
           <button
