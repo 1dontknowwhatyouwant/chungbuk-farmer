@@ -1,2 +1,6 @@
 "use client";
-export { default } from "../../components/HomePage/HomePage";
+import HomePage from "../../components/HomePage/HomePage";
+
+export default function HomeRoutePage() {
+  return <HomePage />;
+}

@@ -1,2 +1,3 @@
 "use client";
-export { default } from "../../components/LoginPage/LoginPage";
+import LoginPage from "../../components/LoginPage/LoginPage";
+export default function LoginRoutePage() { return <LoginPage />; }

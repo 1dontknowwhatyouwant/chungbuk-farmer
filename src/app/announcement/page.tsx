@@ -1,2 +1,6 @@
 "use client";
-export { default } from "../../components/announcement/Announcement";
+import Announcement from "../../components/announcement/Announcement";
+
+export default function AnnouncementRoutePage() {
+  return <Announcement />;
+}

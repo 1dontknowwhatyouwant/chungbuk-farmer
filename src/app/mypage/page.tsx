@@ -1,2 +1,6 @@
 "use client";
-export { default } from "../../components/MypagePage/MypagePage";
+import MypagePage from "../../components/MypagePage/MypagePage";
+
+export default function MypageRoutePage() {
+  return <MypagePage />;
+}

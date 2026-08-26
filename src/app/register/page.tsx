@@ -1,2 +1,3 @@
 "use client";
-export { default } from "../../components/RegisterPage/RegisterPage";
+import RegisterPage from "../../components/RegisterPage/RegisterPage";
+export default function RegisterRoutePage() { return <RegisterPage />; }
