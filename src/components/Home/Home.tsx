@@ -2,16 +2,14 @@
 
 import { useEffect, useState } from "react";
 import {
-  homeAccountOff,
-  homeAnnouncementOff,
   homeAlarm,
   homeLogo,
-  homeHomeOn,
   homeCarrot,
   homeCorn,
   homePotato,
   homeTomato,
 } from "../../assets/assets";
+import BottomNav from "../common/BottomNav/BottomNav";
 
 type CropItem = {
   name: string;
@@ -218,44 +216,10 @@ function Home({ onGoToMypage, onGoToAnnouncement }: HomeProps) {
           더보기
         </div>
 
-        <nav
-          className="absolute bottom-[12px] left-[6.2%] box-border h-[77px] w-[87.6%] rounded-[35px] border border-[#F2F8E1] bg-[linear-gradient(180deg,rgba(248,253,234,0.44)_-25.32%,rgba(199,232,115,0.44)_100%)]"
-          aria-label="하단 메뉴"
-        >
-          <button
-            type="button"
-            className="absolute left-[48px] top-[12px] flex flex-col items-center border-0 bg-transparent p-0"
-          >
-            <img src={homeHomeOn.src} alt="" className="h-[38px] w-[38px]" />
-            <span className="mt-[6px] text-[14px] font-normal leading-[17px] text-[#4672B9]">
-              홈
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={onGoToAnnouncement}
-            className="absolute left-[160px] top-[12px] flex flex-col items-center border-0 bg-transparent p-0"
-          >
-            <img
-              src={homeAnnouncementOff.src}
-              alt=""
-              className="h-[38px] w-[38px]"
-            />
-            <span className="mt-[6px] text-[14px] font-normal leading-[17px] text-[#97ABB1]">
-              공고
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={onGoToMypage}
-            className="absolute left-[272px] top-[12px] flex flex-col items-center border-0 bg-transparent p-0"
-          >
-            <img src={homeAccountOff.src} alt="" className="h-[38px] w-[38px]" />
-            <span className="mt-[6px] text-[14px] font-normal leading-[17px] text-[#97ABB1]">
-              내 정보
-            </span>
-          </button>
-        </nav>
+        <BottomNav
+          onGoToMypage={onGoToMypage}
+          onGoToAnnouncement={onGoToAnnouncement}
+        />
       </section>
     </main>
   );

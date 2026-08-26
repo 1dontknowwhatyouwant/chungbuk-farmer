@@ -9,6 +9,9 @@ import signupMountainLarge from "./images/signup/mountain-large.svg";
 import signupMountainSmall from "./images/signup/mountain-small.svg";
 import mypageBottomNavIcons from "./images/mypage/bottom-nav-icons.svg";
 import mypageProfileAvatar from "./images/mypage/profile-avatar.svg";
+import mypageCheck from "./images/mypage/check.svg";
+import mypageMoney from "./images/mypage/money.svg";
+import mypageStudy from "./images/mypage/study.svg";
 import homeTomato from "./images/home/tomato.png";
 import homeCarrot from "./images/home/carrot.png";
 import homeCorn from "./images/home/corn.png";
@@ -33,6 +36,9 @@ export {
   signupMountainSmall,
   mypageBottomNavIcons,
   mypageProfileAvatar,
+  mypageCheck,
+  mypageMoney,
+  mypageStudy,
   homeTomato,
   homeCarrot,
   homeCorn,

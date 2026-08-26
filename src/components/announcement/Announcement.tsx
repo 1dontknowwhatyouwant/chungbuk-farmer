@@ -4,9 +4,148 @@ import { useRouter } from "next/navigation";
 import AppIcon from "../common/icon/AppIcon";
 import { jobPostingApi, type PublicJobPosting } from "../../services/api";
 type StatusFilter = "OPEN" | "CLOSED" | "ALL";
-const labels: Record<StatusFilter, string> = { OPEN: "모집중", CLOSED: "마감", ALL: "전체" };
+const labels: Record<StatusFilter, string> = {
+  OPEN: "모집중",
+  CLOSED: "마감",
+  ALL: "전체",
+};
 export default function Announcement() {
-  const router = useRouter(); const [query, setQuery] = useState(""); const [submitted, setSubmitted] = useState(""); const [filter, setFilter] = useState<StatusFilter>("OPEN"); const [notices, setNotices] = useState<PublicJobPosting[]>([]); const [total, setTotal] = useState(0); const [loading, setLoading] = useState(true); const [error, setError] = useState("");
-  useEffect(() => { let active = true; setLoading(true); setError(""); jobPostingApi.list({ keyword: submitted || undefined, recruitmentStatus: filter, page: 0, size: 20 }).then(({ data }) => { if (active) { setNotices(data.content); setTotal(data.totalElements); } }).catch(() => { if (active) setError("공고를 불러오지 못했습니다."); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, [filter, submitted]);
-  return <main className="min-h-screen bg-[#1f1f1f] sm:flex sm:justify-center sm:px-4 sm:py-8"><section className="min-h-screen w-full max-w-[402px] overflow-hidden bg-[#f2fcff] text-[#1b1e20]" style={{ fontFamily: "Pretendard, Inter, sans-serif" }}><header className="relative h-[115px] bg-[#e9ece1]"><button onClick={() => router.back()} aria-label="뒤로가기" className="absolute left-8 top-[73px] bg-transparent p-0"><AppIcon name="chevron-left" size={24} /></button><h1 className="pt-[76px] text-center text-[18px]">공고 목록</h1></header><div className="px-[44px] pt-[26px]"><form onSubmit={(e) => { e.preventDefault(); setSubmitted(query.trim()); }} className="flex h-[34px] items-center gap-3 rounded-[12px] bg-[#e9edf4] px-4"><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="공고명,작물,지역 검색" className="min-w-0 flex-1 bg-transparent text-[14px] outline-none placeholder:text-[#a1a1a2]" /><button aria-label="검색" type="submit" className="bg-transparent p-0"><AppIcon name="search" size={18} /></button></form></div><div className="flex justify-center gap-3 px-8 pt-[18px]">{(["ALL", "OPEN", "CLOSED"] as StatusFilter[]).map((item) => <button key={item} onClick={() => setFilter(item)} className={`h-6 rounded-[12px] border border-[#ced6e1] px-3 text-[12px] ${filter === item ? "bg-[#bfcbde]" : "bg-[#f2fcff]"}`}>{labels[item]}</button>)}</div><div className="mt-[17px] border-t border-[#bfcbde] px-[44px] pt-[11px]"><p className="mb-[22px] text-[10px] text-[#5c5c5c]">총 {total}건의 공고가 있습니다.</p>{loading && <p className="py-8 text-center text-sm text-[#777]">공고를 불러오는 중입니다.</p>}{error && <p className="py-8 text-center text-sm text-[#b44]">{error}</p>}{!loading && !error && notices.length === 0 && <p className="py-8 text-center text-sm text-[#777]">조건에 맞는 공고가 없습니다.</p>}<div className="space-y-[15px] pb-8">{notices.map((notice) => <article key={notice.id} className="min-h-[138px] rounded-[12px] border border-[#ced6e3] bg-[#f5f5f5] p-[20px]"><div className="flex items-start justify-between gap-2"><h2 className="text-[18px] font-normal">{notice.title}</h2><span className="shrink-0 rounded-full bg-white/70 px-2 py-1 text-[10px]">{notice.recruitmentStatus === "OPEN" ? "모집중" : "마감"}</span></div><p className="mt-[18px] text-[12px]">작업일&nbsp;&nbsp; {notice.workDate} {notice.startTime.slice(0, 5)}~{notice.endTime.slice(0, 5)}</p><p className="mt-[6px] text-[12px]">{notice.cityCounty} · {notice.meetingPlace}</p><p className="mt-[6px] text-[12px] text-[#4672B9]">{notice.farmName} · {notice.wageAmount.toLocaleString()}원/{notice.wageUnit === "DAILY" ? "일" : "시간"}</p></article>)}</div></div></section></main>;
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [submitted, setSubmitted] = useState("");
+  const [filter, setFilter] = useState<StatusFilter>("OPEN");
+  const [notices, setNotices] = useState<PublicJobPosting[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError("");
+    jobPostingApi
+      .list({
+        keyword: submitted || undefined,
+        recruitmentStatus: filter,
+        page: 0,
+        size: 20,
+      })
+      .then(({ data }) => {
+        if (active) {
+          setNotices(data.content);
+          setTotal(data.totalElements);
+        }
+      })
+      .catch(() => {
+        if (active) setError("공고를 불러오지 못했습니다.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [filter, submitted]);
+  return (
+    <main className="min-h-screen bg-[#1f1f1f] sm:flex sm:justify-center sm:px-4 sm:py-8">
+      <section
+        className="min-h-screen w-full max-w-[402px] overflow-hidden bg-[#f2fcff] text-[#1b1e20]"
+        style={{ fontFamily: "Pretendard, Inter, sans-serif" }}
+      >
+        <header className="relative h-[115px] bg-[#e9ece1]">
+          <button
+            onClick={() => router.back()}
+            aria-label="뒤로가기"
+            className="absolute left-8 top-[73px] bg-transparent p-0"
+          >
+            <AppIcon name="chevron-left" size={24} />
+          </button>
+          <h1 className="pt-[76px] text-center text-[18px]">공고 목록</h1>
+        </header>
+        <div className="px-[44px] pt-[26px]">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setSubmitted(query.trim());
+            }}
+            className="flex h-[34px] items-center gap-3 rounded-[12px] bg-[#e9edf4] px-4"
+          >
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="공고명,작물,지역 검색"
+              className="min-w-0 flex-1 bg-transparent text-[14px] outline-none placeholder:text-[#a1a1a2]"
+            />
+            <button
+              aria-label="검색"
+              type="submit"
+              className="bg-transparent p-0"
+            >
+              <AppIcon name="search" size={18} />
+            </button>
+          </form>
+        </div>
+        <div className="flex justify-center gap-3 px-8 pt-[18px]">
+          {(["ALL", "OPEN", "CLOSED"] as StatusFilter[]).map((item) => (
+            <button
+              key={item}
+              onClick={() => setFilter(item)}
+              className={`h-6 rounded-[12px] border border-[#ced6e1] px-3 text-[12px] ${filter === item ? "bg-[#bfcbde]" : "bg-[#f2fcff]"}`}
+            >
+              {labels[item]}
+            </button>
+          ))}
+        </div>
+        <div className="mt-[17px] border-t border-[#bfcbde] px-[44px] pt-[11px]">
+          <p className="mb-[22px] text-[10px] text-[#5c5c5c]">
+            총 {total}건의 공고가 있습니다.
+          </p>
+          {loading && (
+            <p className="py-8 text-center text-sm text-[#777]">
+              공고를 불러오는 중입니다.
+            </p>
+          )}
+          {error && (
+            <p className="py-8 text-center text-sm text-[#b44]">{error}</p>
+          )}
+          {!loading && !error && notices.length === 0 && (
+            <p className="py-8 text-center text-sm text-[#777]">
+              조건에 맞는 공고가 없습니다.
+            </p>
+          )}
+          <div className="space-y-[15px] pb-8">
+            {notices.map((notice) => (
+              <button
+                type="button"
+                onClick={() => router.push(`/announcement/${notice.id}`)}
+                className="block w-full text-left"
+              >
+                <article
+                  key={notice.id}
+                  className="min-h-[138px] rounded-[12px] border border-[#ced6e3] bg-[#f5f5f5] p-[20px]"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <h2 className="text-[18px] font-normal">{notice.title}</h2>
+                    <span className="shrink-0 rounded-full bg-white/70 px-2 py-1 text-[10px]">
+                      {notice.recruitmentStatus === "OPEN" ? "모집중" : "마감"}
+                    </span>
+                  </div>
+                  <p className="mt-[18px] text-[12px]">
+                    작업일&nbsp;&nbsp; {notice.workDate}{" "}
+                    {notice.startTime.slice(0, 5)}~{notice.endTime.slice(0, 5)}
+                  </p>
+                  <p className="mt-[6px] text-[12px]">
+                    {notice.cityCounty} · {notice.meetingPlace}
+                  </p>
+                  <p className="mt-[6px] text-[12px] text-[#4672B9]">
+                    {notice.farmName} · {notice.wageAmount.toLocaleString()}원/
+                    {notice.wageUnit === "DAILY" ? "일" : "시간"}
+                  </p>
+                </article>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
+  );
 }
