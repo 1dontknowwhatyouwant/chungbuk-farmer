@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+export const API_BASE_URL =
+  (process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080').replace(/\/$/, '');
+
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080/api',
+  baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -37,14 +40,14 @@ export type LoginResponse = {
 };
 
 export const authApi = {
-  checkId: (loginId: string) => api.get<{ loginId: string; available: boolean }>('/auth/check-id', { params: { loginId } }),
-  signup: (payload: { loginId: string; password: string; name: string; userType: UserType }) => api.post<User>('/auth/signup', payload),
-  login: (loginId: string, password: string) => api.post<LoginResponse>('/auth/login', { loginId, password }),
-  me: () => api.get<User>('/auth/me'),
-  logout: () => api.post('/auth/logout'),
-  withdrawal: (password: string) => api.post('/auth/withdrawal', { password }),
+  checkId: (loginId: string) => api.get<{ loginId: string; available: boolean }>('/api/auth/check-id', { params: { loginId } }),
+  signup: (payload: { loginId: string; password: string; name: string; userType: UserType }) => api.post<User>('/api/auth/signup', payload),
+  login: (loginId: string, password: string) => api.post<LoginResponse>('/api/auth/login', { loginId, password }),
+  me: () => api.get<User>('/api/auth/me'),
+  logout: () => api.post('/api/auth/logout'),
+  withdrawal: (password: string) => api.post('/api/auth/withdrawal', { password }),
 };
 
 export type PublicJobPosting = { id: number; farmName: string; cityCounty: string; crop: string; workType: string; workDate: string; startTime: string; endTime: string; capacity: number; meetingPlace: string; wageAmount: number; wageUnit: 'HOURLY' | 'DAILY'; title: string; description: string; recruitmentStatus: 'OPEN' | 'CLOSED'; acceptingApplications: boolean; myApplication: { applicationId: number; status: string } | null; };
 export type JobPostingListResponse = { content: PublicJobPosting[]; page: number; size: number; totalElements: number; totalPages: number; hasNext: boolean; };
-export const jobPostingApi = { list: (params?: { keyword?: string; recruitmentStatus?: 'OPEN' | 'CLOSED' | 'ALL'; page?: number; size?: number }) => api.get<JobPostingListResponse>('/job-postings', { params }) };
+export const jobPostingApi = { list: (params?: { keyword?: string; recruitmentStatus?: 'OPEN' | 'CLOSED' | 'ALL'; page?: number; size?: number }) => api.get<JobPostingListResponse>('/api/job-postings', { params }) };
