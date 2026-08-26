@@ -44,3 +44,7 @@ export const authApi = {
   logout: () => api.post('/auth/logout'),
   withdrawal: (password: string) => api.post('/auth/withdrawal', { password }),
 };
+
+export type PublicJobPosting = { id: number; farmName: string; cityCounty: string; crop: string; workType: string; workDate: string; startTime: string; endTime: string; capacity: number; meetingPlace: string; wageAmount: number; wageUnit: 'HOURLY' | 'DAILY'; title: string; description: string; recruitmentStatus: 'OPEN' | 'CLOSED'; acceptingApplications: boolean; myApplication: { applicationId: number; status: string } | null; };
+export type JobPostingListResponse = { content: PublicJobPosting[]; page: number; size: number; totalElements: number; totalPages: number; hasNext: boolean; };
+export const jobPostingApi = { list: (params?: { keyword?: string; recruitmentStatus?: 'OPEN' | 'CLOSED' | 'ALL'; page?: number; size?: number }) => api.get<JobPostingListResponse>('/job-postings', { params }) };

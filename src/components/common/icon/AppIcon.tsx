@@ -13,6 +13,8 @@ import {
   FiUser,
   FiUsers,
   FiXCircle,
+  FiChevronLeft,
+  FiSearch,
 } from "react-icons/fi";
 
 export type AppIconName =
@@ -28,7 +30,9 @@ export type AppIconName =
   | "rejected"
   | "user"
   | "users"
-  | "home";
+  | "home"
+  | "chevron-left"
+  | "search";
 
 const icons: Record<AppIconName, IconType> = {
   admin: FiSettings,
@@ -44,6 +48,8 @@ const icons: Record<AppIconName, IconType> = {
   user: FiUser,
   users: FiUsers,
   home: FiHome,
+  "chevron-left": FiChevronLeft,
+  search: FiSearch,
 };
 
 type AppIconProps = Omit<React.ComponentProps<IconType>, "aria-label"> & {

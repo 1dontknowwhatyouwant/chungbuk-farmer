@@ -31,9 +31,10 @@ const cropItems: CropItem[] = [
 
 interface HomeProps {
   onGoToMypage?: () => void;
+  onGoToAnnouncement?: () => void;
 }
 
-function Home({ onGoToMypage }: HomeProps) {
+function Home({ onGoToMypage, onGoToAnnouncement }: HomeProps) {
   const [imageIndex, setImageIndex] = useState(0);
   const [priceIndex, setPriceIndex] = useState(0);
 
@@ -232,6 +233,7 @@ function Home({ onGoToMypage }: HomeProps) {
           </button>
           <button
             type="button"
+            onClick={onGoToAnnouncement}
             className="absolute left-[160px] top-[12px] flex flex-col items-center border-0 bg-transparent p-0"
           >
             <img

@@ -1,1 +1,2 @@
-export { default } from "./pages";
+"use client";
+export { default } from "../../components/MypagePage/MypagePage";
