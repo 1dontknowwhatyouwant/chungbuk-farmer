@@ -1,22 +1,24 @@
 "use client";
 
 import {
-  homeAccountOn,
-  homeAnnouncementOff,
-  homeHomeOff,
+  mypageCheck,
+  mypageMoney,
   mypageProfileAvatar,
+  mypageStudy,
 } from "../../assets/assets";
+import BottomNav from "../common/BottomNav/BottomNav";
 import { useAuthStore } from "../../stores/useAuthStore";
 
 const pageClass =
   "min-h-screen bg-[#1f1f1f] text-black sm:flex sm:items-center sm:justify-center sm:px-4 sm:py-8";
 const screenClass =
-  "relative mx-auto flex min-h-[100svh] w-full max-w-[402px] flex-col overflow-hidden bg-white px-[24px] pb-[106px] pt-[64px] shadow-2xl";
+  "relative mx-auto flex min-h-[100svh] w-full max-w-[402px] flex-col overflow-hidden bg-[linear-gradient(180deg,#cdf2fb_0%,#eef7eb_54%,#fff_95%)] px-[25px] pb-[106px] pt-[72px] shadow-2xl";
 
 const quickMenus = [
-  "내 신청 현황",
-  "정산 상태",
-  "교육이수",
+  { label: "신청현황", icon: mypageCheck },
+  { label: "정산상태", icon: mypageMoney },
+  { label: "교육이수", icon: mypageStudy },
+  { label: "타임라인", icon: mypageMoney },
 ];
 
 interface MypageProps {
@@ -44,29 +46,11 @@ function Mypage({
         <header className="flex items-start gap-[12px]">
           <h1
             id="mypage-title"
-            className="m-0 text-[16px] font-normal leading-[19px]"
+            className="m-0 text-[20px] font-normal leading-[24px] text-[#2c393d]"
           >
             {userName}
           </h1>
-          <span className="mt-[2px] text-[8px] leading-[10px] text-[#5db6ff]">
-            교육이수자
-          </span>
-          <div className="ml-auto flex items-center gap-[8px] text-[10px] leading-[12px]">
-            <button
-              type="button"
-              className="cursor-pointer border-0 bg-transparent p-0 text-[#424242]"
-              onClick={onLogout}
-            >
-              로그아웃
-            </button>
-            <button
-              type="button"
-              className="cursor-pointer border-0 bg-transparent p-0 text-[#858282]"
-              onClick={onDeleteAccount}
-            >
-              계정 삭제
-            </button>
-          </div>
+          <span className="mt-[1px] text-[10px] leading-[12px] text-[#2e89d4]">교육이수자</span>
         </header>
 
         {deleteErrorMessage ? (
@@ -76,17 +60,17 @@ function Mypage({
         ) : null}
 
         <nav
-          className="mt-[43px] grid grid-cols-3 place-items-center gap-[45px]"
+          className="mt-[33px] grid grid-cols-4 place-items-center"
           aria-label="마이페이지 빠른 메뉴"
         >
           {quickMenus.map((menu) => (
             <button
-              key={menu}
+              key={menu.label}
               type="button"
-              className="flex w-[58px] cursor-pointer flex-col items-center gap-[11px] border-0 bg-transparent p-0 text-[8px] leading-[10px] text-black"
+              className="flex w-[64px] cursor-pointer flex-col items-center gap-[11px] border-0 bg-transparent p-0 text-[12px] leading-[15px] text-[#424242]"
             >
-              <span className="h-[42px] w-[42px] bg-[#d9d9d9]" aria-hidden />
-              <span className="whitespace-nowrap">{menu}</span>
+              <span className="flex h-[42px] items-center justify-center" aria-hidden><img src={menu.icon.src} alt="" className="max-h-[32px] max-w-[38px]" /></span>
+              <span className="whitespace-nowrap">{menu.label}</span>
             </button>
           ))}
         </nav>
@@ -94,11 +78,11 @@ function Mypage({
         <section className="mt-[18px]" aria-labelledby="my-info-title">
           <h2
             id="my-info-title"
-            className="m-0 text-[16px] font-normal leading-[19px]"
+            className="m-0 text-[24px] font-medium leading-[29px] text-[#475559]"
           >
             내 정보
           </h2>
-          <div className="mt-[17px] flex h-[57px] items-center gap-[24px] rounded-[12px] bg-[#d9d9d9] px-[30px]">
+          <div className="mt-[17px] flex h-[57px] items-center gap-[24px] rounded-[12px] border border-[#c4c7c3] bg-[#f8f5f3] px-[28px]">
             <img
               src={mypageProfileAvatar.src}
               alt=""
@@ -118,11 +102,11 @@ function Mypage({
         <section className="mt-[26px]" aria-labelledby="eligibility-title">
           <h2
             id="eligibility-title"
-            className="m-0 text-[16px] font-normal leading-[19px]"
+            className="m-0 text-[24px] font-medium leading-[29px] text-[#475559]"
           >
             참여 자격 확인
           </h2>
-          <div className="mt-[12px] h-[140px] rounded-[12px] bg-[#d9d9d9] px-[18px] py-[17px]">
+          <div className="mt-[12px] h-[140px] rounded-[12px] bg-white px-[18px] py-[17px] shadow-[0_4px_6.7px_rgba(0,0,0,.15)]">
             <div className="flex items-center gap-[31px]">
               <span className="text-[12px] leading-[15px]">신청 상태</span>
               <span className="text-[12px] leading-[15px] text-[#858282]">
@@ -134,9 +118,9 @@ function Mypage({
             </p>
             <button
               type="button"
-              className="mx-auto mt-[18px] block h-[48px] w-[290px] max-w-full cursor-pointer rounded-[12px] border-0 bg-[#a3a3a3] text-[16px] leading-[19px] text-black"
+              className="mx-auto mt-[18px] block h-[48px] w-[290px] max-w-full cursor-pointer rounded-[12px] border-0 bg-[#d1e895] text-[16px] leading-[19px] text-black"
             >
-              신청 정보 확인 하기
+              신청하러 가기
             </button>
           </div>
         </section>
@@ -144,7 +128,7 @@ function Mypage({
         <section className="mt-[26px]" aria-labelledby="education-title">
           <h2
             id="education-title"
-            className="m-0 text-[16px] font-normal leading-[19px]"
+            className="m-0 text-[24px] font-medium leading-[29px] text-[#475559]"
           >
             교육 이수 상태
           </h2>
@@ -162,67 +146,29 @@ function Mypage({
                 4시간 미이수
               </span>
               <div className="relative h-[22px] overflow-hidden rounded-[19px] bg-[#d9d9d9]">
-                <div className="h-[18px] w-[84px] rounded-l-[19px] bg-[#787777]" />
-                <span className="absolute left-[64px] top-[5px] text-[8px] leading-[10px] text-[#424242]">
+                <div className="h-[18px] w-[84px] rounded-l-[19px] bg-[#3477e4]" />
+                <span className="absolute left-[64px] top-[5px] text-[8px] leading-[10px] text-white">
                   50%
                 </span>
               </div>
             </div>
             <button
               type="button"
-              className="mx-auto mt-[9px] block h-[39px] w-[220px] cursor-pointer rounded-[12px] border-0 bg-[#a3a3a3] text-[12px] leading-[15px] text-[#424242]"
+              className="mx-auto mt-[9px] block h-[39px] w-[220px] cursor-pointer rounded-[12px] border-0 bg-[#c2e762] text-[12px] leading-[15px] text-[#424242] shadow-[0_2px_4px_rgba(0,0,0,.25)]"
             >
               교육 들으러 바로 가기
             </button>
           </div>
         </section>
 
-        <section className="mt-[28px] rounded-[12px] bg-[#a3a3a3] px-[35px] py-[18px]">
+        <section className="mt-[28px] rounded-[12px] bg-[#e8e7e7] px-[35px] py-[18px]">
           <div className="flex items-center justify-between gap-4 text-[12px] leading-[15px]">
             <span>교육 수료증 인증 상태</span>
             <span className="text-[#424242]">확인 대기중</span>
           </div>
         </section>
 
-        <nav
-          className="absolute bottom-[16px] left-[24px] right-[16px] h-[70px] rounded-[35px] bg-[#d9d9d9]"
-          aria-label="하단 메뉴"
-        >
-          <button
-            type="button"
-            className="absolute left-[48px] top-[12px] flex flex-col items-center border-0 bg-transparent p-0"
-            onClick={onGoHome}
-          >
-            <img src={homeHomeOff.src} alt="" className="h-[38px] w-[38px]" />
-            <span className="mt-[6px] text-[14px] font-normal leading-[17px] text-[#97ABB1]">
-              홈
-            </span>
-          </button>
-          <button
-            type="button"
-            className="absolute left-[160px] top-[12px] flex flex-col items-center border-0 bg-transparent p-0"
-            onClick={onGoHome}
-          >
-            <img
-              src={homeAnnouncementOff.src}
-              alt=""
-              className="h-[38px] w-[38px]"
-            />
-            <span className="mt-[6px] text-[14px] font-normal leading-[17px] text-[#97ABB1]">
-              공고
-            </span>
-          </button>
-          <button
-            type="button"
-            className="absolute left-[272px] top-[12px] flex flex-col items-center border-0 bg-transparent p-0"
-            onClick={() => onGoHome?.()}
-          >
-            <img src={homeAccountOn.src} alt="" className="h-[38px] w-[38px]" />
-            <span className="mt-[6px] text-[14px] font-normal leading-[17px] text-[#4672B9]">
-              내 정보
-            </span>
-          </button>
-        </nav>
+        <BottomNav activePage="mypage" variant="mypage" onGoHome={onGoHome} onGoToAnnouncement={onGoHome} />
       </section>
     </main>
   );
