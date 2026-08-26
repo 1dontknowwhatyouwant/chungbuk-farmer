@@ -11,7 +11,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   setUser: (user) => set({ user }),
   logout: () => {
-    if (typeof window !== 'undefined') window.localStorage.removeItem('chungbuk-farmer-access-token');
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem('chungbuk-farmer-access-token');
+      window.sessionStorage.removeItem('chungbuk-farmer-access-token');
+    }
     set({ user: null });
   },
 }));

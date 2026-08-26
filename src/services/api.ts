@@ -13,7 +13,9 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
-    const accessToken = window.localStorage.getItem('chungbuk-farmer-access-token');
+    const accessToken =
+      window.localStorage.getItem('chungbuk-farmer-access-token') ??
+      window.sessionStorage.getItem('chungbuk-farmer-access-token');
     if (accessToken) config.headers.Authorization = `Bearer ${accessToken}`;
   }
   return config;
@@ -41,8 +43,8 @@ export type LoginResponse = {
 
 export const authApi = {
   checkId: (loginId: string) => api.get<{ loginId: string; available: boolean }>('/api/auth/check-id', { params: { loginId } }),
-  signup: (payload: { loginId: string; password: string; name: string; userType: UserType }) => api.post<User>('/api/auth/signup', payload),
-  login: (loginId: string, password: string) => api.post<LoginResponse>('/api/auth/login', { loginId, password }),
+  signup: (payload: { loginId: string; password: string; name: string; userType: UserType }) => api.post<User>('/api/auth/signup', payload, { headers: { 'Content-Type': 'application/json' } }),
+  login: (loginId: string, password: string) => api.post<LoginResponse>('/api/auth/login', { loginId, password }, { headers: { 'Content-Type': 'application/json' } }),
   me: () => api.get<User>('/api/auth/me'),
   logout: () => api.post('/api/auth/logout'),
   withdrawal: (password: string) => api.post('/api/auth/withdrawal', { password }),

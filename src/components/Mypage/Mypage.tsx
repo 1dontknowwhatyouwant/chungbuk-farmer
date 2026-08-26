@@ -36,6 +36,7 @@ function Mypage({
 }: MypageProps) {
   const user = useAuthStore((state) => state.user);
   const userName = user?.name || "유저 이름";
+  const userTypeLabel = user?.userType === "FARM" ? "농가" : "교육이수자";
 
   return (
     <main className={pageClass}>
@@ -50,7 +51,25 @@ function Mypage({
           >
             {userName}
           </h1>
-          <span className="mt-[1px] text-[10px] leading-[12px] text-[#2e89d4]">교육이수자</span>
+          <span className="mt-[2px] text-[8px] leading-[10px] text-[#5db6ff]">
+            {userTypeLabel}
+          </span>
+          <div className="ml-auto flex items-center gap-[8px] text-[10px] leading-[12px]">
+            <button
+              type="button"
+              className="cursor-pointer border-0 bg-transparent p-0 text-[#424242]"
+              onClick={onLogout}
+            >
+              로그아웃
+            </button>
+            <button
+              type="button"
+              className="cursor-pointer border-0 bg-transparent p-0 text-[#858282]"
+              onClick={onDeleteAccount}
+            >
+              계정 삭제
+            </button>
+          </div>
         </header>
 
         {deleteErrorMessage ? (

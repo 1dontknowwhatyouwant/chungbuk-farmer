@@ -67,6 +67,34 @@ function Login({
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
+    let cancelled = false;
+
+    const restoreLogin = async () => {
+      const accessToken =
+        window.localStorage.getItem("chungbuk-farmer-access-token") ??
+        window.sessionStorage.getItem("chungbuk-farmer-access-token");
+
+      if (!accessToken) return;
+
+      try {
+        const { data } = await authApi.me();
+        if (!cancelled) {
+          setUser(data);
+          onLoginSuccess?.();
+        }
+      } catch {
+        window.localStorage.removeItem("chungbuk-farmer-access-token");
+        window.sessionStorage.removeItem("chungbuk-farmer-access-token");
+      }
+    };
+
+    void restoreLogin();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
     const animationFrame = window.requestAnimationFrame(() => {
       setIntroActive(true);
     });
@@ -88,7 +116,12 @@ function Login({
 
     try {
       const { data } = await authApi.login(loginId, password);
-      window.localStorage.setItem("chungbuk-farmer-access-token", data.accessToken);
+      window.localStorage.removeItem("chungbuk-farmer-access-token");
+      window.sessionStorage.removeItem("chungbuk-farmer-access-token");
+      (rememberMe ? window.localStorage : window.sessionStorage).setItem(
+        "chungbuk-farmer-access-token",
+        data.accessToken,
+      );
 
       setUser({
         ...data.user,
