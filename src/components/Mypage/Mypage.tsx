@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import {
   mypageCheck,
   mypageMoney,
@@ -8,6 +10,7 @@ import {
 } from "../../assets/assets";
 import BottomNav from "../common/BottomNav/BottomNav";
 import { useAuthStore } from "../../stores/useAuthStore";
+import { educationApi, type EducationCertification } from "../../services/api";
 
 const pageClass =
   "min-h-screen bg-[#1f1f1f] text-black sm:flex sm:items-center sm:justify-center sm:px-4 sm:py-8";
@@ -26,6 +29,7 @@ interface MypageProps {
   onDeleteAccount?: () => void;
   onLogout?: () => void;
   onGoHome?: () => void;
+  onGoAnnouncement?: () => void;
   onGoTimeline?: () => void;
 }
 
@@ -34,11 +38,46 @@ function Mypage({
   onDeleteAccount,
   onLogout,
   onGoHome,
+  onGoAnnouncement,
   onGoTimeline,
 }: MypageProps) {
   const user = useAuthStore((state) => state.user);
+  const [education, setEducation] = useState<EducationCertification | null>(null);
+  const [educationError, setEducationError] = useState("");
   const userName = user?.name || "정보 없음";
   const userTypeLabel = user?.userType === "FARM" ? "농가" : "교육이수자";
+
+  useEffect(() => {
+    let disposed = false;
+
+    const refreshEducation = async () => {
+      try {
+        const response = await educationApi.getCertification();
+        if (!disposed) {
+          setEducation(response.data);
+          setEducationError("");
+        }
+      } catch {
+        if (!disposed) setEducationError("교육 수강 현황을 불러오지 못했습니다.");
+      }
+    };
+
+    refreshEducation();
+    const timer = window.setInterval(refreshEducation, 10000);
+    return () => {
+      disposed = true;
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  const course = education?.courses.find((item) => item.mandatory) ?? education?.courses[0];
+  const progress = course?.progressPercentage ?? 0;
+  const remainingHours = course ? Math.ceil(course.remainingMinutes / 60) : 0;
+  const progressLabel = course
+    ? course.progressStatus === "COMPLETED"
+      ? "이수 완료"
+      : `${remainingHours}시간 미이수`
+    : "교육 정보 확인 중";
 
   return (
     <main className={pageClass}>
@@ -157,29 +196,32 @@ function Mypage({
           <div className="mt-[28px] px-[19px]">
             <div className="flex items-center gap-[18px]">
               <span className="text-[12px] leading-[15px] text-[#424242]">
-                충북형 도시농부 필수 교육
+                {course?.title ?? "충북형 도시농부 필수 교육"}
               </span>
               <span className="text-[8px] leading-[10px] text-[#424242]">
-                8시간
+                {course ? `${course.requiredHours}시간` : "-시간"}
               </span>
             </div>
             <div className="mt-[13px] grid grid-cols-[110px_minmax(0,171px)] items-center gap-[10px]">
               <span className="text-right text-[12px] leading-[15px] text-[#424242]">
-                4시간 미이수
+                {progressLabel}
               </span>
               <div className="relative h-[22px] overflow-hidden rounded-[19px] bg-[#d9d9d9]">
-                <div className="h-[18px] w-[84px] rounded-l-[19px] bg-[#3477e4]" />
-                <span className="absolute left-[64px] top-[5px] text-[8px] leading-[10px] text-white">
-                  50%
+                <div className="h-[18px] rounded-l-[19px] bg-[#3477e4]" style={{ width: `${progress}%` }} />
+                <span className="absolute inset-0 top-[5px] text-center text-[8px] leading-[10px] text-white">
+                  {progress}%
                 </span>
               </div>
             </div>
             <a
-              href="https://agriedu.net/"
+              href={course?.externalApplicationUrl ?? "https://agriedu.net/"}
+              target="_blank"
+              rel="noreferrer"
               className="mx-auto mt-[9px] block h-[39px] w-[220px] cursor-pointer rounded-[12px] border-0 bg-[#c2e762] text-center text-[12px] leading-[39px] text-[#424242] no-underline shadow-[0_2px_4px_rgba(0,0,0,.25)]"
             >
               교육 들으러 바로 가기
             </a>
+            {educationError ? <p className="mt-2 text-center text-[10px] text-red-500">{educationError}</p> : null}
           </div>
         </section>
 
@@ -190,7 +232,7 @@ function Mypage({
           </div>
         </section>
 
-        <BottomNav activePage="mypage" variant="mypage" onGoHome={onGoHome} onGoToAnnouncement={onGoHome} />
+        <BottomNav activePage="mypage" variant="mypage" onGoHome={onGoHome} onGoToAnnouncement={onGoAnnouncement} />
       </section>
     </main>
   );
