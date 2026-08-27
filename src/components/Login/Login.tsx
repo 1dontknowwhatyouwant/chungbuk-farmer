@@ -2,11 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import {
-  apple,
-  kakao,
   chungbukFarmerLogo,
-  naver,
-  signupEllipseWide,
   signupEye,
   signupMountainLarge,
   signupMountainSmall,
@@ -14,13 +10,6 @@ import {
 import Button from "../common/button/Button";
 import { authApi } from "../../services/api";
 import { useAuthStore } from "../../stores/useAuthStore";
-
-const socialLogins = [
-  { label: "네이버 로그인", image: naver.src },
-  { label: "카카오 로그인", image: kakao.src },
-  { label: "Apple 로그인", image: apple.src },
-  { label: "추가 로그인", image: signupEllipseWide.src },
-];
 
 const pageClass =
   "min-h-screen bg-[#1f1f1f] text-[#251f1f] sm:flex sm:items-center sm:justify-center sm:px-4 sm:py-8";
@@ -239,19 +228,6 @@ function Login({
           >
             회원가입
           </button>
-        </div>
-
-        <div className="relative z-10 mt-[43px] flex justify-between px-[20px] max-[360px]:px-0">
-          {socialLogins.map((item) => (
-            <button
-              key={item.label}
-              type="button"
-              aria-label={item.label}
-              className="flex h-[64px] w-[64px] cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0"
-            >
-              <img src={item.image} alt="" className="h-full w-full" />
-            </button>
-          ))}
         </div>
 
         <img

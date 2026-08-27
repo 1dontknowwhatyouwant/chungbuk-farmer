@@ -2,24 +2,13 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import {
-  apple,
   chungbukFarmerLogo,
-  kakao,
-  naver,
-  signupEllipseWide,
   signupEye,
   signupMountainLarge,
   signupMountainSmall,
 } from "../../assets/assets";
 import Button from "../common/button/Button";
 import { authApi } from "../../services/api";
-
-const socialButtons = [
-  { label: "네이버로 회원가입", image: naver.src },
-  { label: "카카오로 회원가입", image: kakao.src },
-  { label: "Apple로 회원가입", image: apple.src },
-  { label: "추가 회원가입", image: signupEllipseWide.src },
-];
 
 const pageClass =
   "min-h-screen bg-[#1f1f1f] text-[#251f1f] sm:flex sm:items-center sm:justify-center sm:px-4 sm:py-8";
@@ -273,19 +262,6 @@ function Register({ onLoginClick, onRegisterComplete }: RegisterProps) {
           >
             로그인
           </button>
-        </div>
-
-        <div className="relative z-10 mt-[43px] flex justify-between px-[20px] max-[360px]:px-0">
-          {socialButtons.map((item) => (
-            <button
-              key={item.label}
-              type="button"
-              aria-label={item.label}
-              className="flex h-[64px] w-[64px] cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0"
-            >
-              <img src={item.image} alt="" className="h-full w-full" />
-            </button>
-          ))}
         </div>
 
         <img
