@@ -51,7 +51,35 @@ export const authApi = {
   withdrawal: (password: string) => api.post('/api/auth/withdrawal', { password }),
 };
 
-export type FarmProfile = { id: number; farmName: string; representativeName: string; contactNumber: string; farmAddress: string; cityCounty: string; crops: string[]; mainActivities: string; businessRegistrationNumber?: string | null; farmAreaPyeong: number; status: string; };
+export type FarmProfileStatus = 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'INACTIVE' | 'DRAFT';
+export type FarmProfile = { id: number; farmName: string; representativeName: string; contactNumber: string; farmAddress: string; cityCounty: string; crops: string[]; mainActivities: string; businessRegistrationNumber?: string | null; farmAreaPyeong: number; status: FarmProfileStatus; };
+export type AdminFarmProfile = FarmProfile & {
+  reviewerId: number | null;
+  reviewerName: string | null;
+  reviewedAt: string | null;
+  rejectionReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+export type FarmOwnershipReview = {
+  /** Ownership submission ID, not the farm profile ID used in the request URL. */
+  id: number;
+  attemptNumber: number;
+  status: 'APPROVED' | 'REJECTED';
+  farmProfileStatus: 'APPROVED' | 'REJECTED';
+  submittedAt: string;
+  reviewerId: number | null;
+  reviewerName: string | null;
+  reviewedAt: string | null;
+  rejectionReason: string | null;
+  documents: { id: number; originalFilename: string; contentType: string; sizeBytes: number }[];
+  farmNameSnapshot: string;
+  representativeNameSnapshot: string;
+  farmAddressSnapshot: string;
+  cityCountySnapshot: string;
+  businessRegistrationNumberSnapshot: string | null;
+  farmAreaPyeongSnapshot: number;
+};
 export type FarmProfilePayload = Omit<FarmProfile, "id" | "status">;
 export const farmProfileApi = {
   get: () => api.get<FarmProfile>("/api/farm-profiles/me"),
@@ -205,6 +233,17 @@ export type WorkAssignment = {
 
 export const centerAdminApi = {
   dashboard: () => api.get<AdminDashboard>('/api/admin/dashboard'),
+  farmProfiles: (status: FarmProfileStatus = 'PENDING_REVIEW') =>
+    api.get<AdminFarmProfile[]>('/api/admin/farm-profiles', { params: { status } }),
+  approveFarmOwnership: (profileId: number) => {
+    if (!Number.isSafeInteger(profileId) || profileId <= 0) throw new Error('농장 프로필 ID가 올바르지 않습니다.');
+    return api.post<FarmOwnershipReview>(`/api/admin/farm-profiles/${profileId}/ownership/approve`);
+  },
+  rejectFarmOwnership: (profileId: number, reason: string) => {
+    if (!Number.isSafeInteger(profileId) || profileId <= 0) throw new Error('농장 프로필 ID가 올바르지 않습니다.');
+    if (!reason.trim()) throw new Error('반려 사유를 입력해 주세요.');
+    return api.post<FarmOwnershipReview>(`/api/admin/farm-profiles/${profileId}/ownership/reject`, { reason: reason.trim() });
+  },
   participationApplications: () =>
     api.get<ParticipationApplication[]>('/api/admin/participation-applications'),
   participationApplication: (id: number) =>

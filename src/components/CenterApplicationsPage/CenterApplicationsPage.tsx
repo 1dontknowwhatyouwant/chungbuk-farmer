@@ -6,20 +6,23 @@ import { isAxiosError } from "axios";
 import {
   centerAdminApi,
   type EducationSubmission,
-  type ParticipationApplication,
-  type ParticipationApplicationStatus,
+  type AdminFarmProfile,
 } from "../../services/api";
+import { applyFarmOwnershipReview, ownershipFilterStatuses, ownershipReviewState, readFarmProfiles, type OwnershipFilter } from "../../services/farmOwnership";
 import CenterFeedback from "../common/center/CenterFeedback";
 import CenterModal from "../common/center/CenterModal";
 import AppIcon from "../common/icon/AppIcon";
-import ApplicationCard, { applicationStatusLabel } from "./ApplicationCard";
+import ApplicationCard from "./ApplicationCard";
 import styles from "./CenterApplicationsPage.module.css";
 
-type Section = "participation" | "education";
-type ParticipationFilter = "ALL" | ParticipationApplicationStatus;
+type Section = "ownership" | "education";
+const ownershipFilters: { value: OwnershipFilter; label: string }[] = [
+  { value: "ALL", label: "전체" }, { value: "pending", label: "대기" },
+  { value: "approved", label: "승인" }, { value: "rejected", label: "반려" },
+];
 type ModalState =
-  | { kind: "approve-participation"; item: ParticipationApplication }
-  | { kind: "reject-participation"; item: ParticipationApplication }
+  | { kind: "approve-ownership"; item: AdminFarmProfile }
+  | { kind: "reject-ownership"; item: AdminFarmProfile }
   | { kind: "approve-education"; item: EducationSubmission }
   | { kind: "reject-education"; item: EducationSubmission }
   | null;
@@ -35,11 +38,11 @@ export default function CenterApplicationsPage() {
   const router = useRouter();
   const requestId = useRef(0);
   const mutationInFlight = useRef(false);
-  const [section, setSection] = useState<Section>("participation");
-  const [filter, setFilter] = useState<ParticipationFilter>("ALL");
+  const [section, setSection] = useState<Section>("ownership");
+  const [filter, setFilter] = useState<OwnershipFilter>("pending");
   const [page, setPage] = useState(0);
   const [keyword, setKeyword] = useState("");
-  const [participation, setParticipation] = useState<ParticipationApplication[]>([]);
+  const [farmProfiles, setFarmProfiles] = useState<AdminFarmProfile[]>([]);
   const [education, setEducation] = useState<EducationSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,9 +57,10 @@ export default function CenterApplicationsPage() {
     setLoading(true);
     setError(null);
     try {
-      if (section === "participation") {
-        const { data } = await centerAdminApi.participationApplications();
-        if (currentRequest === requestId.current) setParticipation(data);
+      if (section === "ownership") {
+        const responses = await Promise.all(ownershipFilterStatuses(filter).map(status => centerAdminApi.farmProfiles(status)));
+        const profiles = responses.flatMap(({ data }) => readFarmProfiles(data));
+        if (currentRequest === requestId.current) setFarmProfiles([...new Map(profiles.map(profile => [profile.id, profile])).values()]);
       } else {
         const { data } = await centerAdminApi.educationSubmissions({ page: 0, size: 100 });
         if (currentRequest === requestId.current) setEducation(data.content);
@@ -68,25 +72,25 @@ export default function CenterApplicationsPage() {
     } finally {
       if (currentRequest === requestId.current) setLoading(false);
     }
-  }, [section]);
+  }, [section, filter]);
 
   useEffect(() => {
     void load();
     return () => { requestId.current += 1; };
   }, [load]);
 
-  const filteredParticipation = useMemo(() => {
+  const filteredProfiles = useMemo(() => {
     const normalized = keyword.trim().toLowerCase();
-    return participation.filter((item) => {
-      const filterMatched = filter === "ALL" || item.status === filter;
-      const keywordMatched = !normalized || item.urbanFarmerName.toLowerCase().includes(normalized) || String(item.urbanFarmerId).includes(normalized);
+    return farmProfiles.filter((item) => {
+      const filterMatched = filter === "ALL" || ownershipReviewState(item) === filter;
+      const keywordMatched = !normalized || [item.farmName, item.representativeName, item.contactNumber, String(item.id)].some(value => value?.toLowerCase().includes(normalized));
       return filterMatched && keywordMatched;
     });
-  }, [filter, keyword, participation]);
+  }, [filter, keyword, farmProfiles]);
 
-  const pageCount = Math.ceil(filteredParticipation.length / PAGE_SIZE);
+  const pageCount = Math.ceil(filteredProfiles.length / PAGE_SIZE);
   const currentPage = Math.min(page, Math.max(0, pageCount - 1));
-  const visibleParticipation = filteredParticipation.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
+  const visibleProfiles = filteredProfiles.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
 
   const filteredEducation = useMemo(() => {
     const normalized = keyword.trim().toLowerCase();
@@ -95,6 +99,7 @@ export default function CenterApplicationsPage() {
 
   const openModal = (next: NonNullable<ModalState>) => {
     if (mutationInFlight.current) return;
+    if ((next.kind === "approve-ownership" || next.kind === "reject-ownership") && ownershipReviewState(next.item) !== "pending") return;
     setReason("");
     setModalError(null);
     if (next.kind === "approve-education") {
@@ -105,7 +110,7 @@ export default function CenterApplicationsPage() {
 
   const confirmModal = async () => {
     if (!modal || mutationInFlight.current) return;
-    if ((modal.kind === "reject-participation" || modal.kind === "reject-education") && !reason.trim()) {
+    if ((modal.kind === "reject-ownership" || modal.kind === "reject-education") && !reason.trim()) {
       setModalError("반려 사유를 입력해 주세요.");
       return;
     }
@@ -113,12 +118,12 @@ export default function CenterApplicationsPage() {
     mutationInFlight.current = true;
     setSubmitting(modal.item.id);
     try {
-      if (modal.kind === "approve-participation") {
-        const { data } = await centerAdminApi.approveParticipation(modal.item.id);
-        setParticipation((current) => current.map((entry) => entry.id === data.id ? data : entry));
-      } else if (modal.kind === "reject-participation") {
-        const { data } = await centerAdminApi.rejectParticipation(modal.item.id, reason.trim());
-        setParticipation((current) => current.map((entry) => entry.id === data.id ? data : entry));
+      if (modal.kind === "approve-ownership" || modal.kind === "reject-ownership") {
+        const { data } = modal.kind === "approve-ownership"
+          ? await centerAdminApi.approveFarmOwnership(modal.item.id)
+          : await centerAdminApi.rejectFarmOwnership(modal.item.id, reason.trim());
+        const updated = applyFarmOwnershipReview(modal.item, data);
+        setFarmProfiles(current => current.map(profile => profile.id === updated.id ? updated : profile));
       } else if (modal.kind === "approve-education") {
         const hours = Number(recognizedHours);
         const minimumHours = Math.max(8, modal.item.requiredHoursSnapshot);
@@ -133,8 +138,9 @@ export default function CenterApplicationsPage() {
         setEducation((current) => current.filter((entry) => entry.id !== modal.item.id));
       }
       setModal(null);
-    } catch {
-      setModalError("처리하지 못했습니다. 입력값과 현재 상태를 확인해 주세요.");
+    } catch (cause) {
+      const message = isAxiosError(cause) ? cause.response?.data?.message : undefined;
+      setModalError(typeof message === "string" ? message : "처리 결과를 확인하지 못했습니다. 목록을 새로 확인한 뒤 다시 시도해 주세요.");
     } finally {
       mutationInFlight.current = false;
       setSubmitting(null);
@@ -162,37 +168,37 @@ export default function CenterApplicationsPage() {
         <button type="button" className={styles.back} aria-label="센터 홈으로 돌아가기" onClick={() => router.push("/center-home")}>
           <AppIcon name="chevron-left" size={24} strokeWidth={1.5} />
         </button>
-        <h1>{section === "participation" ? "도시 농부 신청 대기 목록" : "도시 농부 교육 증빙 검토"}</h1>
+        <h1>{section === "ownership" ? "농장 소유권 신청 대기 목록" : "도시 농부 교육 증빙 검토"}</h1>
       </header>
-      <p className={styles.description}>관리자가 도시농부 신청 대기 건을 목록으로 조회하는 화면 입니다.</p>
+      <p className={styles.description}>{section === "ownership" ? "관리자가 농장 소유권 신청을 검토하는 화면입니다." : "관리자가 도시농부 교육 증빙을 검토하는 화면입니다."}</p>
       <label className={styles.search}>
         <span className="sr-only">검색</span>
         <input
           type="search"
           value={keyword}
           onChange={(event) => { setKeyword(event.target.value); setPage(0); }}
-          placeholder={section === "participation" ? "이름 또는 신청자 번호 검색" : "이름 또는 교육 과정 검색"}
+          placeholder={section === "ownership" ? "농장명, 대표자 또는 연락처 검색" : "이름 또는 교육 과정 검색"}
         />
         <span aria-hidden="true"><AppIcon name="search" size={22} strokeWidth={1.5} className={styles.searchIcon} /></span>
       </label>
 
-      {section === "participation" ? (
+      {section === "ownership" ? (
         <div className={styles.filters} role="group" aria-label="신청 상태 필터">
-          {(["ALL", "SUBMITTED", "APPROVED", "REJECTED"] as ParticipationFilter[]).map((value) => (
-            <button key={value} type="button" aria-pressed={filter === value} onClick={() => { setFilter(value); setPage(0); }}>
-              {value === "ALL" ? "전체" : applicationStatusLabel[value]}
+          {ownershipFilters.map(({ value, label }) => (
+            <button key={value} type="button" disabled={submitting !== null} aria-pressed={filter === value} onClick={() => { if (value !== filter) { setLoading(true); setFilter(value); } setPage(0); }}>
+              {label}
             </button>
           ))}
         </div>
       ) : null}
 
-      <div className={section === "participation" ? styles.list : styles.education} aria-busy={loading}>
-        <CenterFeedback loading={loading} loadingLabel={section === "participation" ? "도시 농부 신청 목록을 불러오는 중입니다." : "교육 증빙 목록을 불러오는 중입니다."} error={error} onRetry={() => void load()} />
-        {!loading && !error && section === "participation" && filteredParticipation.length === 0 ? <CenterFeedback empty="조건에 맞는 참여 신청이 없습니다." /> : null}
+      <div className={section === "ownership" ? styles.list : styles.education} aria-busy={loading}>
+        <CenterFeedback loading={loading} loadingLabel={section === "ownership" ? "농장 소유권 신청 목록을 불러오는 중입니다." : "교육 증빙 목록을 불러오는 중입니다."} error={error} onRetry={() => void load()} />
+        {!loading && !error && section === "ownership" && filteredProfiles.length === 0 ? <CenterFeedback empty="조건에 맞는 농장 신청이 없습니다." /> : null}
         {!loading && !error && section === "education" && filteredEducation.length === 0 ? <CenterFeedback empty="검토할 교육 증빙이 없습니다." /> : null}
 
-        {!loading && !error && section === "participation" ? visibleParticipation.map((item) => (
-          <ApplicationCard key={item.id} item={item} submitting={submitting === item.id} disabled={submitting !== null} onApprove={() => openModal({ kind: "approve-participation", item })} onReject={() => openModal({ kind: "reject-participation", item })} />
+        {!loading && !error && section === "ownership" ? visibleProfiles.map((item) => (
+          <ApplicationCard key={item.id} item={item} submitting={submitting === item.id} disabled={submitting !== null} onApprove={() => openModal({ kind: "approve-ownership", item })} onReject={() => openModal({ kind: "reject-ownership", item })} />
         )) : null}
 
         {!loading && !error && section === "education" ? filteredEducation.map((item) => (
@@ -217,7 +223,7 @@ export default function CenterApplicationsPage() {
         )) : null}
       </div>
 
-      {!loading && !error && section === "participation" && pageCount > 1 ? (
+      {!loading && !error && section === "ownership" && pageCount > 1 ? (
         <nav className={styles.pagination} aria-label="신청 목록 페이지">
           {Array.from({ length: pageCount }, (_, index) => (
             <button key={index} type="button" aria-label={`${index + 1}페이지`} aria-current={currentPage === index ? "page" : undefined} onClick={() => setPage(index)}>
@@ -226,28 +232,28 @@ export default function CenterApplicationsPage() {
           ))}
         </nav>
       ) : null}
-      <p className="sr-only" role="status">{loading ? "불러오는 중" : error ? error : section === "participation" ? `신청 ${filteredParticipation.length}건, ${pageCount ? currentPage + 1 : 0}/${pageCount}페이지` : `교육 증빙 ${filteredEducation.length}건`}</p>
-      <button type="button" className={styles.educationToggle} disabled={submitting !== null} onClick={() => { setLoading(true); setSection(section === "participation" ? "education" : "participation"); setKeyword(""); setPage(0); }}>
-        {section === "participation" ? "교육 증빙 검토" : "참여 신청 목록으로 돌아가기"}
+      <p className="sr-only" role="status">{loading ? "불러오는 중" : error ? error : section === "ownership" ? `신청 ${filteredProfiles.length}건, ${pageCount ? currentPage + 1 : 0}/${pageCount}페이지` : `교육 증빙 ${filteredEducation.length}건`}</p>
+      <button type="button" className={styles.educationToggle} disabled={submitting !== null} onClick={() => { setLoading(true); setSection(section === "ownership" ? "education" : "ownership"); setKeyword(""); setPage(0); }}>
+        {section === "ownership" ? "교육 증빙 검토" : "농장 소유권 신청 목록으로 돌아가기"}
       </button>
 
       {modal ? (
         <CenterModal
           variant={modal.kind === "approve-education" ? "default" : "review"}
-          title={modal.kind === "approve-participation" ? "승인 처리" : modal.kind === "approve-education" ? "교육 이수 승인" : "반려 처리"}
-          description={modal.kind === "approve-participation" ? undefined : modal.kind === "approve-education" ? "증빙을 확인하고 최종 인정 시간을 입력해 주세요." : "반려 사유를 입력해주세요. 사유는 도시 농부에게 전달됩니다."}
-          confirmLabel={modal.kind === "approve-participation" ? "네" : modal.kind === "approve-education" ? "승인 확정" : "반려 확정"}
-          cancelLabel={modal.kind === "approve-participation" ? "아니오" : "취소"}
-          confirmFirst={modal.kind === "approve-participation"}
+          title={modal.kind === "approve-ownership" ? "승인 처리" : modal.kind === "approve-education" ? "교육 이수 승인" : "반려 처리"}
+          description={modal.kind === "approve-ownership" ? undefined : modal.kind === "approve-education" ? "증빙을 확인하고 최종 인정 시간을 입력해 주세요." : modal.kind === "reject-ownership" ? "농장 소유권 신청의 반려 사유를 입력해 주세요." : "반려 사유를 입력해주세요. 사유는 도시 농부에게 전달됩니다."}
+          confirmLabel={modal.kind === "approve-ownership" ? "네" : modal.kind === "approve-education" ? "승인 확정" : "반려 확정"}
+          cancelLabel={modal.kind === "approve-ownership" ? "아니오" : "취소"}
+          confirmFirst={modal.kind === "approve-ownership"}
           submitting={submitting === modal.item.id}
-          destructive={modal.kind === "reject-participation" || modal.kind === "reject-education"}
+          destructive={modal.kind === "reject-ownership" || modal.kind === "reject-education"}
           onCancel={() => { if (!mutationInFlight.current) setModal(null); }}
           onConfirm={() => void confirmModal()}
         >
-          {modal.kind === "approve-participation" ? (
+          {modal.kind === "approve-ownership" ? (
             <div className={styles.approvalMessage}>
-              <p>선택한 도시 농부 신청을 승인 하시겠습니까?</p>
-              <p className={styles.approvalHint}>승인 후 도시농부 상태가 참여 가능으로 변경됩니다.</p>
+              <p>선택한 농장 소유권 신청을 승인하시겠습니까?</p>
+              <p className={styles.approvalHint}>{modal.item.farmName}의 소유권 신청을 승인합니다.</p>
             </div>
           ) : modal.kind === "approve-education" ? (
             <label className="block text-sm text-[#59676b]">인정 시간
