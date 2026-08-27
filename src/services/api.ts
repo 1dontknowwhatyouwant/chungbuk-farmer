@@ -50,6 +50,14 @@ export const authApi = {
   withdrawal: (password: string) => api.post('/api/auth/withdrawal', { password }),
 };
 
+export type FarmProfile = { id: number; farmName: string; representativeName: string; contactNumber: string; farmAddress: string; cityCounty: string; crops: string[]; mainActivities: string; businessRegistrationNumber?: string | null; farmAreaPyeong: number; status: string; };
+export type FarmProfilePayload = Omit<FarmProfile, "id" | "status">;
+export const farmProfileApi = {
+  get: () => api.get<FarmProfile>("/api/farm-profiles/me"),
+  create: (payload: FarmProfilePayload) => api.post<FarmProfile>("/api/farm-profiles", payload),
+  update: (payload: FarmProfilePayload) => api.patch<FarmProfile>("/api/farm-profiles/me", payload),
+};
+
 export type PublicJobPosting = { id: number; farmProfileId: number; farmName: string; cityCounty: string; crop: string; workType: string; workDate: string; startTime: string; endTime: string; capacity: number; meetingPlace: string; supplies: string | null; precautions: string | null; farmMessage: string | null; applicantPreference: string | null; beginnerGuide: string | null; approvedAt: string; wageAmount: number; wageUnit: 'HOURLY' | 'DAILY'; title: string; description: string; recruitmentStatus: 'OPEN' | 'CLOSED'; acceptingApplications: boolean; myApplication: { applicationId: number; status: string } | null; };
 export type JobPostingListResponse = { content: PublicJobPosting[]; page: number; size: number; totalElements: number; totalPages: number; hasNext: boolean; };
 export const jobPostingApi = { list: (params?: { keyword?: string; region?: string; crop?: string; dateFrom?: string; dateTo?: string; workType?: string; recruitmentStatus?: 'OPEN' | 'CLOSED' | 'ALL'; page?: number; size?: number }) => api.get<JobPostingListResponse>('/api/job-postings', { params }), get: (id: number | string, includeClosed = false) => api.get<PublicJobPosting>(`/api/job-postings/${id}`, { params: { includeClosed } }) };
