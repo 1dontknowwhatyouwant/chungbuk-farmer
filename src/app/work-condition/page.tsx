@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import submitCheckPin from "../../assets/images/work-condition/pin.svg";
+import { workPreferenceApi } from "../../services/api";
 
 const fieldClass = "mt-2 h-[31px] rounded-[12px] bg-[#f1f3f6] px-3 text-[14px] text-[#5c5c5c] shadow-[0_3px_3.8px_rgba(0,0,0,0.14)] outline-none";
 const weekDays = ["월", "화", "수", "목", "금", "토", "일"];
@@ -21,6 +22,7 @@ const workRegions = [
 ] as const;
 const WORK_CONDITION_STORAGE_KEY = "chungbuk-farmer-work-condition";
 type SavedWorkCondition = { region?: string; days?: string[]; startDate?: string; endDate?: string; experience?: string; vehicle?: boolean; notes?: string };
+const dayToApi: Record<string, string> = { 월: "MONDAY", 화: "TUESDAY", 수: "WEDNESDAY", 목: "THURSDAY", 금: "FRIDAY", 토: "SATURDAY", 일: "SUNDAY" };
 
 export default function WorkConditionPage() {
   const router = useRouter();
@@ -33,6 +35,7 @@ export default function WorkConditionPage() {
   const [endDate, setEndDate] = useState("2026-12-31");
   const [experience, setExperience] = useState("NONE");
   const [notes, setNotes] = useState("");
+  const [hasSavedPreference, setHasSavedPreference] = useState(false);
 
   useEffect(() => {
     try {
@@ -45,8 +48,18 @@ export default function WorkConditionPage() {
         if (saved.experience) setExperience(saved.experience);
         if (typeof saved.vehicle === "boolean") setVehicle(saved.vehicle);
         if (saved.notes) setNotes(saved.notes);
+        setHasSavedPreference(true);
       }
     } catch { /* ignore malformed local data */ }
+    void workPreferenceApi.me().then(({ data }) => {
+      setRegion(data.preferredRegions[0] ?? "CHEONGJU");
+      setSelectedDays(data.availableDays.map((day) => weekDays.find((item) => dayToApi[item] === day)).filter((day): day is string => Boolean(day)));
+      if (data.preferredStartDate) setStartDate(data.preferredStartDate);
+      if (data.preferredEndDate) setEndDate(data.preferredEndDate);
+      setVehicle(data.canTravel);
+      setNotes(data.notes ?? "");
+      setHasSavedPreference(true);
+    }).catch(() => { /* keep local data when API is unavailable */ });
   }, []);
 
   const toggleDay = (day: string) => {
@@ -66,7 +79,7 @@ export default function WorkConditionPage() {
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    localStorage.setItem(WORK_CONDITION_STORAGE_KEY, JSON.stringify({
+    const savedCondition = {
       appliedAt: new Date().toISOString().slice(0, 10).replace(/-/g, "."),
       region: formData.get("region"),
       regionName: workRegions.find(([value]) => value === formData.get("region"))?.[1] ?? "",
@@ -76,9 +89,24 @@ export default function WorkConditionPage() {
       experience: formData.get("experience"),
       vehicle,
       notes: formData.get("notes"),
-    }));
-    window.alert("신청서가 제출되었습니다.");
-    router.push("/home");
+    };
+    void workPreferenceApi.upsert({
+      preferredRegions: [String(formData.get("region"))],
+      availableDays: orderedSelectedDays.map((day) => dayToApi[day]),
+      availableWorkTypes: ["농작업"],
+      preferredStartDate: String(formData.get("startDate")),
+      preferredEndDate: String(formData.get("endDate")),
+      canTravel: vehicle,
+      notes: String(formData.get("notes") ?? "").trim() || null,
+    }).then(() => {
+      setHasSavedPreference(true);
+      localStorage.setItem(WORK_CONDITION_STORAGE_KEY, JSON.stringify(savedCondition));
+      window.alert("희망 근무 조건이 저장되었습니다.");
+      router.push("/home");
+    }).catch(() => {
+      localStorage.setItem(WORK_CONDITION_STORAGE_KEY, JSON.stringify(savedCondition));
+      window.alert("신청서를 저장하지 못했습니다. 잠시 후 다시 시도해주세요.");
+    });
   };
 
   return (
@@ -92,7 +120,7 @@ export default function WorkConditionPage() {
           <p className="text-center text-[10px]">신청 후 중개센터 검토까지 1~2일 소요 될 수 있습니다.</p>
           <div className="mt-[17px] rounded-[12px] border border-[#ced6e3] bg-[#f5f5f5] px-3 py-4">
             <div className="text-[18px]">현재 신청 상태</div>
-            <div className="mt-2 text-[14px]">승인 대기</div>
+            <div className="mt-2 text-[14px]">{hasSavedPreference ? "등록됨" : "미등록"}</div>
           </div>
 
           <label className="mt-5 block text-[14px]">희망 근무 지역<select name="region" value={region} onChange={(event) => setRegion(event.target.value)} className={`block w-full ${fieldClass}`}><option value="" disabled>지역을 선택해주세요</option>{workRegions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
