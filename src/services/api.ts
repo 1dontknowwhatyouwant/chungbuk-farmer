@@ -225,6 +225,39 @@ export type ParticipationApplication = {
   updatedAt: string;
 };
 
+export type ParticipationApplicationPayload = {
+  programYear: number;
+  agriculturalBusinessRegistered: boolean;
+  applicationNote?: string;
+};
+
+export const participationApplicationApi = {
+  me: () => api.get<ParticipationApplication | null>('/api/participation-applications/me'),
+  submit: (payload: ParticipationApplicationPayload) =>
+    api.post<ParticipationApplication>('/api/participation-applications', payload),
+};
+
+export type WorkPreference = {
+  id: number;
+  urbanFarmerId: number;
+  preferredRegions: string[];
+  availableDays: string[];
+  availableWorkTypes: string[];
+  preferredStartDate: string | null;
+  preferredEndDate: string | null;
+  canTravel: boolean;
+  notes: string | null;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type WorkPreferencePayload = Omit<Pick<WorkPreference, 'preferredRegions' | 'availableDays' | 'availableWorkTypes' | 'preferredStartDate' | 'preferredEndDate' | 'canTravel' | 'notes'>, never>;
+export const workPreferenceApi = {
+  me: () => api.get<WorkPreference>('/api/urban-farmers/me/work-preference'),
+  upsert: (payload: WorkPreferencePayload) => api.put<WorkPreference>('/api/urban-farmers/me/work-preference', payload),
+};
+
 export type EducationDocument = {
   id: number;
   displayOrder: number;
