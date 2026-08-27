@@ -8,3 +8,8 @@
 .options button { padding: 5px 4px; border-radius: 3px; font-size: 12px; line-height: 20px; white-space: nowrap; text-align: left; }
 .options button[aria-pressed="true"], .options button:hover { background: #dbe5f4; }
 .dropdown summary:focus-visible, .options button:focus-visible { outline: 2px solid #4672b9; outline-offset: 2px; }
+.wide { width: 100%; }
+.wide .dropdown, .wide .options { width: 100%; }
+.wide .dropdown summary { border-radius: 12px; padding-inline: 12px; }
+.wide .options button { white-space: normal; overflow-wrap: anywhere; }
+.dropdown summary[aria-disabled="true"] { cursor: not-allowed; opacity: 0.6; }

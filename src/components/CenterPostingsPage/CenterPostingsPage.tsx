@@ -141,8 +141,8 @@ export default function CenterPostingsPage() {
         <p className="sr-only" role="status">{loading ? "불러오는 중" : error || `공고 ${filtered.length}건, ${pageCount ? currentPage + 1 : 0}/${pageCount}페이지, 선택 ${selectedIds.length}건`}</p>
         <footer className={styles.matching}>
           {selectedIds.length > 0 ? <div className={styles.selectionSummary}><span>{selectedIds.length}개 공고 선택</span><button type="button" onClick={() => setSelectedIds([])}>선택 해제</button></div> : null}
-          <button type="button" className={styles.matchingButton} disabled aria-describedby="matching-unavailable">매칭 관리로 이동</button>
-          <p id="matching-unavailable">매칭 관리 화면 연결 준비 중입니다.</p>
+          <button type="button" className={styles.matchingButton} disabled={submitting} onClick={() => router.push(`/center-matching${selectedIds.length ? `?postingIds=${selectedIds.join(",")}` : ""}`)}>매칭 관리로 이동</button>
+          {!selectedIds.length ? <p>매칭할 공고는 다음 화면에서 선택할 수 있습니다.</p> : null}
         </footer>
 
         {detail ? <div className={styles.detailOverlay} role="dialog" aria-modal="true" aria-labelledby="posting-detail-title">

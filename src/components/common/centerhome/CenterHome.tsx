@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   centerHomeApplicationDocument,
   centerHomeApplicationGear,
@@ -64,22 +64,35 @@ export default function CenterHome() {
   const [dashboard, setDashboard] = useState<AdminDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const mounted = useRef(false);
+  const dashboardRequest = useRef<Promise<void> | null>(null);
 
-  const loadDashboard = useCallback(async () => {
+  const loadDashboard = useCallback(() => {
+    // Strict Mode can replay the effect while its first request is still pending.
+    if (dashboardRequest.current) return dashboardRequest.current;
+
     setLoading(true);
     setError(null);
-    try {
-      const { data } = await centerAdminApi.dashboard();
-      setDashboard(data);
-    } catch {
-      setError("업무 현황을 불러오지 못했습니다. 서버 연결과 센터 계정을 확인해 주세요.");
-    } finally {
-      setLoading(false);
-    }
+    dashboardRequest.current = (async () => {
+      try {
+        const { data } = await centerAdminApi.dashboard();
+        if (mounted.current) setDashboard(data);
+      } catch {
+        if (mounted.current) {
+          setError("업무 현황을 불러오지 못했습니다. 서버 연결과 센터 계정을 확인해 주세요.");
+        }
+      } finally {
+        dashboardRequest.current = null;
+        if (mounted.current) setLoading(false);
+      }
+    })();
+    return dashboardRequest.current;
   }, []);
 
   useEffect(() => {
+    mounted.current = true;
     void loadDashboard();
+    return () => { mounted.current = false; };
   }, [loadDashboard]);
 
   const handleLogout = async () => {
