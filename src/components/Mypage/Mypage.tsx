@@ -6,6 +6,7 @@ import {
   mypageCheck,
   mypageMoney,
   mypageProfileAvatar,
+  mypageLogout,
   mypageStudy,
 } from "../../assets/assets";
 import BottomNav from "../common/BottomNav/BottomNav";
@@ -110,13 +111,6 @@ function Mypage({
           <div className="ml-auto flex items-center gap-[8px] text-[10px] leading-[12px]">
             <button
               type="button"
-              className="cursor-pointer border-0 bg-transparent p-0 text-[#424242]"
-              onClick={onLogout}
-            >
-              로그아웃
-            </button>
-            <button
-              type="button"
               className="cursor-pointer border-0 bg-transparent p-0 text-[#858282]"
               onClick={onDeleteAccount}
             >
@@ -175,6 +169,15 @@ function Mypage({
                 {isMounted ? user?.phoneNumber || "연락처 정보 없음" : "연락처 정보 없음"}
               </p>
             </div>
+            <button
+              type="button"
+              aria-label="로그아웃"
+              title="로그아웃"
+              className="ml-auto flex h-[32px] w-[32px] shrink-0 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0 text-[#858282] transition-colors hover:bg-[#e9e6e4]"
+              onClick={onLogout}
+            >
+              <img src={mypageLogout.src} alt="" className="h-[20px] w-[20px]" />
+            </button>
           </div>
         </section>
 
