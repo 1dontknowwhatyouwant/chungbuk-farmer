@@ -7,13 +7,12 @@ import { centerAdminApi, type WorkAssignment } from "../../services/api";
 import CenterFilterDropdown from "../common/center/CenterFilterDropdown";
 import CenterFeedback from "../common/center/CenterFeedback";
 import AppIcon from "../common/icon/AppIcon";
-import { assignmentMetrics, exampleMetrics, koreaToday, REGIONS, unavailableMetrics, type MetricPeriod } from "./metricsData";
+import { assignmentMetrics, exampleMetrics, koreaToday, FILTER_REGIONS, PERIOD_OPTIONS, selectedMonth, unavailableMetrics, type MetricPeriod } from "./metricsData";
 import { MonthlySupplyChart, RegionMap, SuccessRateChart } from "./MetricsCharts";
 import styles from "./CenterMetricsPage.module.css";
 
 type Props = { mode: "statistics" | "data" };
-const periodOptions = [{ value: "ALL", label: "전체" }, { value: "MONTH", label: "이번 달" }, { value: "YEAR", label: "올해" }, { value: "LAST_YEAR", label: "작년" }];
-const regionOptions = ["전체", ...REGIONS].map(value => ({ value, label: value }));
+const periodOptions = PERIOD_OPTIONS;
 
 async function loadAllAssignments() {
   const { data } = await centerAdminApi.workAssignments({ page: 0, size: 100 });
@@ -29,6 +28,7 @@ function MetricsContent({ mode }: Props) {
   const router = useRouter();
   const [period, setPeriod] = useState<MetricPeriod>("ALL");
   const [region, setRegion] = useState("전체");
+  const regionOptions = [...new Set(["전체", ...FILTER_REGIONS, region])].map(value => ({ value, label: value }));
   const [preview, setPreview] = useState(false);
   const [assignments, setAssignments] = useState<WorkAssignment[]>([]);
   const [loading, setLoading] = useState(mode === "statistics");
@@ -96,7 +96,7 @@ function MetricsContent({ mode }: Props) {
         </section>
         <section className={styles.mapSection} aria-labelledby="metrics-map-title">
           <h2 id="metrics-map-title">핵심 운영 지표</h2>
-          <RegionMap values={metrics.regionCounts} selected={region} onSelect={setRegion} preview={preview} />
+          <RegionMap values={metrics.regionCounts} changes={metrics.regionChanges} comparisonLabel={preview || selectedMonth(period, today) ? "전월 대비" : "월 선택 시 비교"} selected={region} onSelect={setRegion} preview={preview} />
         </section>
       </> : <div className={styles.dataSections}>
         <section aria-labelledby="metrics-supply-title"><h2 id="metrics-supply-title">월별 인력 공급 추이</h2><MonthlySupplyChart values={metrics.monthlySupply} /></section>
