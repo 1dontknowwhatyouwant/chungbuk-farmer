@@ -11,6 +11,17 @@ export const api = axios.create({
   },
 });
 
+// 농작물 시세 API는 인증이 필요 없는 공개 API입니다.
+export const MARKET_PRICE_API_URL =
+  process.env.NEXT_PUBLIC_MARKET_PRICE_API_URL ??
+  'https://cityfarmerplus-api-q2f7mbz7oq-uw.a.run.app';
+
+export const publicApi = axios.create({
+  baseURL: MARKET_PRICE_API_URL.replace(/\/$/, ''),
+  timeout: 10000,
+  headers: { 'Content-Type': 'application/json' },
+});
+
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const accessToken =
@@ -62,17 +73,55 @@ export type PublicJobPosting = { id: number; farmProfileId: number; farmName: st
 export type JobPostingListResponse = { content: PublicJobPosting[]; page: number; size: number; totalElements: number; totalPages: number; hasNext: boolean; };
 export const jobPostingApi = { list: (params?: { keyword?: string; region?: string; crop?: string; dateFrom?: string; dateTo?: string; workType?: string; recruitmentStatus?: 'OPEN' | 'CLOSED' | 'ALL'; page?: number; size?: number }) => api.get<JobPostingListResponse>('/api/job-postings', { params }), get: (id: number | string, includeClosed = false) => api.get<PublicJobPosting>(`/api/job-postings/${id}`, { params: { includeClosed } }) };
 
-export type MarketPrice = {
-  crop: string;
-  today: number | string;
-  yesterday: number | string;
-  unit?: string;
+export type ConfirmedWork = PublicJobPosting & {
+  applicationId?: number;
+  applicationStatus?: string;
+  status?: string;
+};
+export type ConfirmedWorkListResponse = ConfirmedWork[] | { content: ConfirmedWork[] } | { data: ConfirmedWork[] };
+export const confirmedWorkApi = {
+  list: () => api.get<ConfirmedWorkListResponse>('/api/applications/me/confirmed'),
+};
+
+export type MarketPriceItem = {
+  marketType: 'RETAIL' | 'WHOLESALE';
+  categoryCode: string;
+  categoryName: string;
+  productNo: string;
+  itemName: string;
+  unit: string;
+  observedDate: string;
+  currentPrice: number;
+  previousDayPrice: number;
+  previousMonthPrice: number;
+  previousYearPrice: number;
+  direction: 'UP' | 'DOWN' | 'UNCHANGED' | 'UNKNOWN';
+  changeRate: number;
+};
+
+export type MarketPriceResponse = {
+  provider: string;
+  description: string;
+  observedDate: string;
+  fetchedAt: string;
+  stale: boolean;
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  items: MarketPriceItem[];
 };
 
 export const marketPriceApi = {
-  list: (crops?: string[]) =>
-    api.get<MarketPrice[]>('/api/market-prices', {
-      params: crops?.length ? { crops: crops.join(',') } : undefined,
+  latest: (params?: {
+    marketType?: 'RETAIL' | 'WHOLESALE';
+    categoryCode?: string;
+    keyword?: string;
+    page?: number;
+    size?: number;
+  }) =>
+    publicApi.get<MarketPriceResponse>('/api/market-prices/latest', {
+      params: { marketType: 'RETAIL', page: 0, size: 100, ...params },
     }),
 };
 
@@ -112,6 +161,13 @@ export type EducationCertification = {
 };
 
 export const educationApi = {
-  getCertification: () =>
-    api.get<EducationCertification>('/api/urban-farmers/me/education-certification'),
+  getCertification: () => {
+    const accessToken = typeof window !== 'undefined'
+      ? window.localStorage.getItem('chungbuk-farmer-access-token') ??
+        window.sessionStorage.getItem('chungbuk-farmer-access-token')
+      : null;
+    return api.get<EducationCertification>('/api/urban-farmers/me/education-certification', {
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+    });
+  },
 };
