@@ -106,17 +106,17 @@ export default function CenterHome() {
   };
 
   const summaryItems = [
-    { label: "신규신청", value: dashboard?.submittedParticipationApplications ?? 0 },
+    { label: "신규신청", value: dashboard?.pendingFarmOwnershipSubmissions ?? 0 },
     { label: "공고검토", value: dashboard?.pendingJobPostings ?? 0 },
     { label: "매칭대기", value: dashboard?.pendingJobApplications ?? 0 },
   ];
 
   const pendingItems = [
     {
-      id: "participation",
-      title: "도시 농부 신청 대기",
+      id: "ownership",
+      title: "농장 소유권 신청 대기",
       firstLabel: "승인 대기",
-      firstValue: dashboard?.submittedParticipationApplications ?? 0,
+      firstValue: dashboard?.pendingFarmOwnershipSubmissions ?? 0,
       secondLabel: "교육 미확인",
       secondValue: dashboard?.pendingEducationSubmissions ?? 0,
       href: "/center-applications",
