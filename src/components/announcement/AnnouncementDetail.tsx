@@ -8,9 +8,14 @@ export default function AnnouncementDetail() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
   const [notice, setNotice] = useState<PublicJobPosting | null>(null);
+  const [error, setError] = useState(false);
   useEffect(() => {
-    jobPostingApi.get(id).then(({ data }) => setNotice(data));
+    setError(false);
+    // 목록에는 마감 공고도 표시되므로 상세 조회에서도 허용해야 합니다.
+    jobPostingApi.get(id, true).then(({ data }) => setNotice(data)).catch(() => setError(true));
   }, [id]);
+  if (error)
+    return <main className="min-h-screen bg-[#1f1f1f] sm:flex sm:justify-center sm:px-4 sm:py-8"><section className="min-h-screen w-full max-w-[402px] bg-[#f2fcff] p-8 text-center text-sm text-[#b44]">공고를 불러오지 못했습니다.<br /><button type="button" onClick={() => router.back()} className="mt-4 underline">뒤로가기</button></section></main>;
   if (!notice)
     return (
       <main className="min-h-screen bg-[#1f1f1f] sm:flex sm:justify-center sm:px-4 sm:py-8">
