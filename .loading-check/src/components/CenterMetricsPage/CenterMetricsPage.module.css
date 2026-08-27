@@ -1,0 +1,38 @@
+.screen { width: 100%; max-width: 402px; min-height: 100svh; margin: 0 auto; padding-bottom: 28px; background: #f2fcff; color: #464c51; font-family: Pretendard, Inter, ui-sans-serif, system-ui, sans-serif; }
+.header { position: relative; display: flex; height: 115px; align-items: flex-end; justify-content: center; padding: 0 52px 18px; background: #e9ece1; }
+.header h1 { font-size: 16px; line-height: 22px; font-weight: 400; color: #1b1e20; }
+.back { position: absolute; left: 20px; bottom: 6px; display: grid; width: 44px; height: 44px; place-items: center; }
+.description { margin: 20px 16px 0; font-size: 9px; line-height: 14px; text-align: center; color: #7c8589; }
+.filters { display: flex; gap: 40px; margin: 22px 48px 28px; }
+.sourceBar { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 42px; padding: 6px 24px; border-bottom: 1px solid #dce8ec; font-size: 10px; line-height: 16px; color: #707d84; }
+.sourceBar p { flex: 1; }
+.sourceBar button { flex-shrink: 0; min-height: 32px; padding: 5px 8px; border: 1px solid #c5d2dc; border-radius: 8px; background: #f8fbfd; font-size: 11px; }
+.previewBar { background: #fff4de; color: #85631c; }
+.operations { padding: 18px 24px 0; }
+.screen h2 { font-size: 18px; line-height: 26px; font-weight: 400; }
+.cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 42px; margin-top: 12px; }
+.card { display: flex; min-height: 156px; flex-direction: column; align-items: center; border-radius: 12px; padding: 14px 8px; background: #e4ecf9; text-align: center; }
+.card h3 { font-size: 13px; line-height: 20px; font-weight: 400; }
+.card strong { margin-top: 20px; font-size: 22px; line-height: 28px; font-weight: 400; color: #242f33; }
+.card dl { margin-top: 8px; font-size: 11px; line-height: 20px; }
+.card dl div { display: flex; justify-content: space-between; gap: 20px; }
+.card p { margin-top: auto; padding-top: 12px; font-size: 10px; line-height: 17px; }
+.note { margin-top: 14px; font-size: 11px; line-height: 18px; color: #748187; overflow-wrap: anywhere; }
+.mapSection { margin-top: 14px; }
+.mapSection h2 { margin: 0 24px 14px; }
+.mapFigure { padding: 18px 10px 14px; border-block: 1px solid #e3e9eb; background: white; }
+.mapFigure svg { display: block; width: 100%; height: auto; }
+.mapRegion { cursor: pointer; outline: none; }
+.mapRegion text { font-size: 12px; fill: #694f51; pointer-events: none; }
+.mapRegion:hover path, .mapRegion:focus-visible path { stroke: #344d69; stroke-width: 2px; }
+.legend text { font-size: 9px; fill: #535b60; }
+.mapFigure figcaption { margin-top: 6px; text-align: center; font-size: 10px; line-height: 16px; color: #7c8589; }
+.mapFigure figcaption a { text-decoration: underline; text-underline-offset: 2px; }
+.dataSections { display: grid; gap: 18px; padding: 18px 24px; }
+.chartFrame { margin-top: 12px; overflow: hidden; border: 1px solid #89969d; border-radius: 16px; }
+.chartFrame svg { display: block; width: 100%; height: auto; }
+.chartFrame text { font-size: 11px; fill: #637076; }
+.chartFrame .chartEmpty { font-size: 11px; fill: #829095; }
+.axis { stroke: #8d999f; stroke-width: 0.8; }
+.screen button:focus-visible { outline: 2px solid #4672b9; outline-offset: 3px; }
+@media (max-width: 359px) { .cards { column-gap: 22px; } .card h3 { font-size: 11px; } .card strong { font-size: 20px; } .filters { margin-inline: 36px; } .sourceBar { padding-inline: 16px; } .dataSections { padding-inline: 18px; } }
