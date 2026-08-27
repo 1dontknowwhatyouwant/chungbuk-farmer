@@ -3,10 +3,10 @@ import type { AdminJobPosting } from "../../services/api";
 export type PostingStatus = "pending" | "approved" | "rejected" | "edited" | "other";
 export const statusOptions = [
   { value: "ALL", label: "전체" },
-  { value: "pending", label: "승인대기" },
-  { value: "approved", label: "승인완료" },
+  { value: "pending", label: "승인 대기" },
+  { value: "approved", label: "승인 완료" },
   { value: "rejected", label: "거절" },
-  { value: "edited", label: "직접수정" },
+  { value: "edited", label: "직접 수정" },
 ] as const;
 export const workOptions = ["전체", "수확", "파종", "제초", "기타"].map((label) => ({ value: label, label }));
 

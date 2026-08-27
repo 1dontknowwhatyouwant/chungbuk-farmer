@@ -15,7 +15,7 @@
 .results h2 { font-size: 20px; line-height: 28px; font-weight: 400; }
 .count { margin-top: 10px; font-size: 10px; line-height: 16px; color: #7c8589; }
 .help { margin-top: 12px; font-size: 11px; line-height: 18px; color: #6b777d; }
-.candidates { display: grid; gap: 14px; margin-top: 28px; }
+.candidates { display: grid; gap: var(--center-card-gap); margin-top: 28px; }
 .candidate { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 116px; padding: 14px 20px; border-radius: 12px; background: #d7d7d7; }
 .candidateInfo { min-width: 0; overflow-wrap: anywhere; }
 .candidateInfo h3 { font-size: 20px; line-height: 26px; font-weight: 400; text-decoration: underline; text-underline-offset: 3px; }

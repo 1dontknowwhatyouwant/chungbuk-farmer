@@ -191,7 +191,7 @@ export default function CenterHome() {
           <h2 id="pending-title" className="text-[24px] font-medium leading-[29px]">
             처리 항목
           </h2>
-          <div className="ml-[13px] mt-[14px] min-h-[207px] max-w-[325px] space-y-[10px] rounded-[12px] border border-[#dbe1ca] bg-[#f4f7eb] px-[22px] py-[19px]" aria-busy={loading}>
+          <div className="ml-[13px] mt-[14px] grid min-h-[207px] max-w-[325px] gap-[var(--center-card-gap)] rounded-[12px] border border-[#dbe1ca] bg-[#f4f7eb] px-[22px] py-[19px]" aria-busy={loading}>
             {error ? (
               <div className="flex h-[169px] flex-col items-center justify-center text-center text-[13px] leading-5 text-[#9b4941]">
                 <span>{error}</span>

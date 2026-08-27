@@ -186,7 +186,7 @@ export default function CenterApplicationsPage() {
         </div>
       ) : null}
 
-      <div className={section === "participation" ? styles.list : `${styles.education} space-y-3`} aria-busy={loading}>
+      <div className={section === "participation" ? styles.list : styles.education} aria-busy={loading}>
         <CenterFeedback loading={loading} loadingLabel={section === "participation" ? "도시 농부 신청 목록을 불러오는 중입니다." : "교육 증빙 목록을 불러오는 중입니다."} error={error} onRetry={() => void load()} />
         {!loading && !error && section === "participation" && filteredParticipation.length === 0 ? <CenterFeedback empty="조건에 맞는 참여 신청이 없습니다." /> : null}
         {!loading && !error && section === "education" && filteredEducation.length === 0 ? <CenterFeedback empty="검토할 교육 증빙이 없습니다." /> : null}
