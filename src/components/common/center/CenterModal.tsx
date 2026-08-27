@@ -1,6 +1,7 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
+import styles from "./CenterModal.module.css";
 
 type CenterModalProps = {
   title: string;
@@ -11,6 +12,9 @@ type CenterModalProps = {
   onCancel: () => void;
   onConfirm: () => void;
   destructive?: boolean;
+  variant?: "default" | "review";
+  cancelLabel?: string;
+  confirmFirst?: boolean;
 };
 
 export default function CenterModal({
@@ -22,7 +26,46 @@ export default function CenterModal({
   onCancel,
   onConfirm,
   destructive,
+  variant = "default",
+  cancelLabel = "취소",
+  confirmFirst = false,
 }: CenterModalProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+  const descriptionId = useId();
+
+  useEffect(() => {
+    if (variant !== "review") return;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const previousOverflow = document.body.style.overflow;
+    dialog.showModal();
+    // Focus the dialog, not the textarea, so opening it does not summon the keyboard.
+    dialog.focus({ preventScroll: true });
+    document.body.style.overflow = "hidden";
+    return () => {
+      dialog.close();
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [variant]);
+
+  if (variant === "review") {
+    const confirmButton = <button key="confirm" type="button" disabled={submitting} onClick={onConfirm}>{submitting ? "처리 중" : confirmLabel}</button>;
+    const cancelButton = <button key="cancel" type="button" disabled={submitting} onClick={onCancel}>{cancelLabel}</button>;
+
+    return (
+      <dialog ref={dialogRef} tabIndex={-1} className={styles.dialog} aria-modal="true" aria-labelledby={titleId} aria-describedby={description ? descriptionId : undefined} aria-busy={submitting} onCancel={(event) => { event.preventDefault(); if (!submitting) onCancel(); }} onKeyDown={(event) => { if (event.key === "Escape") { event.preventDefault(); if (!submitting) onCancel(); } }}>
+        <div className={styles.header}>
+          <h2 id={titleId}>{title}</h2>
+          <button type="button" className={styles.close} aria-label="팝업 닫기" disabled={submitting} onClick={onCancel}>×</button>
+        </div>
+        {description ? <p id={descriptionId} className={styles.description}>{description}</p> : null}
+        {children}
+        <div className={styles.actions}>{confirmFirst ? [confirmButton, cancelButton] : [cancelButton, confirmButton]}</div>
+      </dialog>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/35 px-4 pb-5 sm:items-center" role="dialog" aria-modal="true" aria-labelledby="center-modal-title">
       <div className="w-full max-w-[352px] rounded-[22px] bg-white p-5 shadow-2xl">

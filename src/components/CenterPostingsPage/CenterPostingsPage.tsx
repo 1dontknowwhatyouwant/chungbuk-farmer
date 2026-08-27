@@ -1,143 +1,181 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { isAxiosError } from "axios";
 import { centerAdminApi, type AdminJobPosting } from "../../services/api";
 import CenterFeedback from "../common/center/CenterFeedback";
 import CenterModal from "../common/center/CenterModal";
-import CenterShell from "../common/center/CenterShell";
+import CenterFilterDropdown from "../common/center/CenterFilterDropdown";
+import AppIcon from "../common/icon/AppIcon";
+import { formatWorkDate, postingStatus, postingStatusLabel, statusOptions, workCategory, workOptions } from "./postingFilters";
+import styles from "./CenterPostingsPage.module.css";
 
+type Review = { action: "approve" | "reject"; posting: AdminJobPosting };
+const PAGE_SIZE = 3;
 function formatWage(posting: AdminJobPosting) {
   return `${posting.wageAmount.toLocaleString("ko-KR")}원 / ${posting.wageUnit === "HOURLY" ? "시간" : "일"}`;
 }
 
 export default function CenterPostingsPage() {
+  const router = useRouter();
+  const requestId = useRef(0);
+  const mutationInFlight = useRef(false);
   const [postings, setPostings] = useState<AdminJobPosting[]>([]);
-  const [keyword, setKeyword] = useState("");
-  const [workType, setWorkType] = useState("ALL");
-  const [selected, setSelected] = useState<AdminJobPosting | null>(null);
-  const [rejecting, setRejecting] = useState<AdminJobPosting | null>(null);
+  const [status, setStatus] = useState("ALL");
+  const [workType, setWorkType] = useState("전체");
+  const [page, setPage] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [detail, setDetail] = useState<AdminJobPosting | null>(null);
+  const [review, setReview] = useState<Review | null>(null);
   const [reason, setReason] = useState("");
+  const [reviewError, setReviewError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState<number | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    const currentRequest = ++requestId.current;
     setLoading(true);
     setError(null);
     try {
       const { data } = await centerAdminApi.jobPostings({ page: 0, size: 100 });
-      setPostings(data.content);
-    } catch {
-      setError("농가 공고 검토 목록을 불러오지 못했습니다.");
+      const all = [...data.content];
+      // Filters operate on the full result, not only the first API page.
+      for (let nextPage = 1; nextPage < data.totalPages; nextPage += 1) {
+        if (currentRequest !== requestId.current) return;
+        const result = await centerAdminApi.jobPostings({ page: nextPage, size: 100 });
+        all.push(...result.data.content);
+      }
+      if (currentRequest !== requestId.current) return;
+      setPostings(all);
+      setSelectedIds((ids) => ids.filter((id) => all.some((item) => item.id === id && ["pending", "approved"].includes(postingStatus(item)))));
+    } catch (cause) {
+      if (currentRequest !== requestId.current) return;
+      const code = isAxiosError(cause) ? cause.response?.status : undefined;
+      setError(code === 401 ? "로그인이 필요하거나 만료되었습니다. 다시 로그인해 주세요." : code === 403 ? "센터 관리자 권한이 필요합니다." : "농가 공고 검토 목록을 불러오지 못했습니다.");
     } finally {
-      setLoading(false);
+      if (currentRequest === requestId.current) setLoading(false);
     }
   }, []);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { void load(); return () => { requestId.current += 1; }; }, [load]);
+  const filtered = useMemo(() => postings.filter((item) =>
+    (status === "ALL" || postingStatus(item) === status) && (workType === "전체" || workCategory(item.workType) === workType)
+  ), [postings, status, workType]);
+  const pageCount = Math.ceil(filtered.length / PAGE_SIZE);
+  const currentPage = Math.min(page, Math.max(0, pageCount - 1));
+  const visible = filtered.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
 
-  const workTypes = useMemo(() => Array.from(new Set(postings.map((item) => item.workType))).sort(), [postings]);
-  const filtered = useMemo(() => {
-    const normalized = keyword.trim().toLowerCase();
-    return postings.filter((item) => {
-      const matchesType = workType === "ALL" || item.workType === workType;
-      const matchesKeyword = !normalized || item.title.toLowerCase().includes(normalized) || item.farmName.toLowerCase().includes(normalized) || item.crop.toLowerCase().includes(normalized);
-      return matchesType && matchesKeyword;
-    });
-  }, [keyword, postings, workType]);
-
-  const approve = async (posting: AdminJobPosting) => {
-    setSubmitting(posting.id);
-    try {
-      await centerAdminApi.approveJobPosting(posting.id);
-      setPostings((current) => current.filter((item) => item.id !== posting.id));
-      setSelected(null);
-    } catch {
-      window.alert("공고를 승인하지 못했습니다. 현재 공고 상태를 확인해 주세요.");
-    } finally {
-      setSubmitting(null);
-    }
+  const openReview = (action: Review["action"], posting: AdminJobPosting) => {
+    if (mutationInFlight.current || postingStatus(posting) !== "pending") return;
+    setReason(""); setReviewError(null); setReview({ action, posting });
   };
-
-  const reject = async () => {
-    if (!rejecting || !reason.trim()) {
-      window.alert("반려 사유를 입력해 주세요.");
-      return;
-    }
-    setSubmitting(rejecting.id);
+  const confirmReview = async () => {
+    if (!review || mutationInFlight.current) return;
+    if (review.action === "reject" && !reason.trim()) { setReviewError("반려 사유를 입력해 주세요."); return; }
+    mutationInFlight.current = true;
+    setSubmitting(true); setReviewError(null);
     try {
-      await centerAdminApi.rejectJobPosting(rejecting.id, reason.trim());
-      setPostings((current) => current.filter((item) => item.id !== rejecting.id));
-      setRejecting(null);
-      setSelected(null);
+      const { data } = review.action === "approve"
+        ? await centerAdminApi.approveJobPosting(review.posting.id)
+        : await centerAdminApi.rejectJobPosting(review.posting.id, reason.trim());
+      setPostings((items) => items.map((item) => item.id === data.id ? data : item));
+      if (review.action === "reject") setSelectedIds((ids) => ids.filter((id) => id !== data.id));
+      setDetail((item) => item?.id === data.id ? data : item);
+      setReview(null);
     } catch {
-      window.alert("공고를 반려하지 못했습니다. 현재 공고 상태를 확인해 주세요.");
-    } finally {
-      setSubmitting(null);
-    }
+      setReviewError("처리하지 못했습니다. 현재 공고 상태를 확인하고 다시 시도해 주세요.");
+    } finally { mutationInFlight.current = false; setSubmitting(false); }
   };
 
   return (
-    <CenterShell title="농가 공고 검토 목록" description="농가에서 검토 요청한 일자리 공고의 작업 조건과 안내 내용을 확인해 주세요.">
-      <input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="농가명, 공고명, 작물을 검색해주세요" className="h-11 w-full rounded-xl border border-[#d8dfd2] bg-white px-4 text-sm outline-none placeholder:text-[#a1aaac] focus:border-[#88a84f]" />
-      <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1">
-        <span className="shrink-0 text-xs text-[#7b878a]">작업 종류</span>
-        {["ALL", ...workTypes].map((value) => (
-          <button key={value} type="button" onClick={() => setWorkType(value)} className={`shrink-0 rounded-full px-4 py-2 text-xs ${workType === value ? "bg-[#526166] text-white" : "bg-white text-[#6b777a]"}`}>{value === "ALL" ? "전체" : value}</button>
-        ))}
-      </div>
-
-      <div className="mt-4 space-y-3">
-        <CenterFeedback loading={loading} error={error} onRetry={() => void load()} />
-        {!loading && !error && filtered.length === 0 ? <CenterFeedback empty="검토 대기 중인 농가 공고가 없습니다." /> : null}
-        {!loading && !error ? filtered.map((posting) => (
-          <article key={posting.id} className="rounded-2xl border border-[#dce3d5] bg-white p-4 shadow-[0_3px_10px_rgba(91,110,72,0.08)]">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0"><p className="text-xs text-[#78904b]">{posting.farmName}</p><h2 className="mt-1 truncate text-[17px] font-semibold text-[#3f4d51]">{posting.title}</h2></div>
-              <span className="shrink-0 rounded-full bg-[#fff0c9] px-3 py-1 text-xs text-[#8d6717]">검토 대기</span>
-            </div>
-            <dl className="mt-4 grid grid-cols-2 gap-x-3 gap-y-3 rounded-xl bg-[#f6f8f2] p-3 text-xs">
-              <div><dt className="text-[#829093]">작업일</dt><dd className="mt-1 text-[#435055]">{posting.workDate} {posting.startTime.slice(0, 5)}</dd></div>
-              <div><dt className="text-[#829093]">작업·작물</dt><dd className="mt-1 text-[#435055]">{posting.workType} · {posting.crop}</dd></div>
-              <div><dt className="text-[#829093]">모집 인원</dt><dd className="mt-1 text-[#435055]">{posting.capacity}명</dd></div>
-              <div><dt className="text-[#829093]">임금</dt><dd className="mt-1 text-[#435055]">{formatWage(posting)}</dd></div>
-            </dl>
-            <button type="button" onClick={() => setSelected(posting)} className="mt-3 w-full rounded-xl bg-[#e8effb] py-2.5 text-sm text-[#385784]">상세 검토</button>
-          </article>
-        )) : null}
-      </div>
-
-      {selected ? (
-        <div className="fixed inset-0 z-40 overflow-y-auto bg-[#edf5e8] px-4 py-8">
-          <article className="mx-auto w-full max-w-[402px] rounded-[24px] bg-white p-5 shadow-xl">
-            <button type="button" onClick={() => setSelected(null)} className="flex h-9 w-9 items-center justify-center rounded-full bg-[#eef2ec] text-xl" aria-label="상세 닫기">×</button>
-            <p className="mt-5 text-sm text-[#78904b]">{selected.farmName} · {selected.cityCounty}</p>
-            <h2 className="mt-2 text-[22px] font-semibold text-[#3f4d51]">{selected.title}</h2>
-            <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-[#59676b]">{selected.description}</p>
-            <dl className="mt-5 space-y-3 rounded-2xl bg-[#f6f8f2] p-4 text-sm">
-              <div className="flex justify-between gap-4"><dt className="text-[#829093]">작업일시</dt><dd className="text-right">{selected.workDate} {selected.startTime.slice(0, 5)}~{selected.endTime.slice(0, 5)}</dd></div>
-              <div className="flex justify-between gap-4"><dt className="text-[#829093]">장소</dt><dd className="text-right">{selected.meetingPlace}</dd></div>
-              <div className="flex justify-between gap-4"><dt className="text-[#829093]">농가 주소</dt><dd className="text-right">{selected.farmAddress}</dd></div>
-              <div className="flex justify-between gap-4"><dt className="text-[#829093]">임금</dt><dd className="text-right">{formatWage(selected)}</dd></div>
-              <div className="flex justify-between gap-4"><dt className="text-[#829093]">준비물</dt><dd className="text-right">{selected.supplies || "별도 안내 없음"}</dd></div>
-              <div className="flex justify-between gap-4"><dt className="text-[#829093]">주의사항</dt><dd className="text-right">{selected.precautions || "없음"}</dd></div>
-            </dl>
-            {selected.beginnerGuide ? <section className="mt-4 rounded-2xl border border-[#dce3d5] p-4"><h3 className="font-medium text-[#435055]">초보자 안내</h3><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[#657276]">{selected.beginnerGuide}</p></section> : null}
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              <button type="button" onClick={() => { setReason(""); setRejecting(selected); }} className="rounded-xl border border-[#d98e85] py-3 text-sm text-[#a9564d]">반려</button>
-              <button type="button" disabled={submitting === selected.id} onClick={() => void approve(selected)} className="rounded-xl bg-[#7fa443] py-3 text-sm font-medium text-white disabled:opacity-50">{submitting === selected.id ? "처리 중" : "승인"}</button>
-            </div>
-          </article>
+    <main className="min-h-screen bg-[#1f1f1f] sm:flex sm:justify-center sm:px-4 sm:py-8">
+      <section className={styles.screen}>
+        <header className={styles.header}>
+          <button type="button" className={styles.back} aria-label="센터 홈으로 돌아가기" onClick={() => router.push("/center-home")}><AppIcon name="chevron-left" size={24} strokeWidth={1.5} /></button>
+          <h1>농가 공고 검토 목록</h1>
+        </header>
+        <p className={styles.description}>농가에서 신청한 공고를 관리자가 확인합니다.</p>
+        <div className={styles.toolbar}>
+          <CenterFilterDropdown label="공고 상태" value={status} options={statusOptions} onChange={(value) => { setStatus(value); setPage(0); }} />
+          <CenterFilterDropdown label="작업 종류" value={workType} options={workOptions} onChange={(value) => { setWorkType(value); setPage(0); }} />
         </div>
-      ) : null}
+        <div className={styles.list} aria-busy={loading}>
+          <CenterFeedback loading={loading} error={error} onRetry={() => void load()} />
+          {!loading && !error && !filtered.length ? <CenterFeedback empty="조건에 맞는 농가 공고가 없습니다." /> : null}
+          {!loading && !error ? visible.map((posting) => {
+            const state = postingStatus(posting);
+            const canSelect = state === "pending" || state === "approved";
+            return (
+              <article key={posting.id} className={`${styles.card} ${styles[state]}`} aria-label={`${posting.farmName} ${postingStatusLabel(posting)}`}>
+                <span className={styles.status}>{postingStatusLabel(posting)}</span>
+                <button type="button" className={styles.cardHeading} onClick={() => setDetail(posting)} aria-label={`${posting.farmName} 공고 상세 검토`}>
+                  <h2>{posting.farmName}</h2><span>{posting.title}</span>
+                </button>
+                <dl className={styles.facts}>
+                  <div><dt>작업일:</dt><dd>{formatWorkDate(posting.workDate)}</dd></div>
+                  <div><dt>모집</dt><dd>{posting.capacity}명</dd></div>
+                  <div><dt>집결</dt><dd>{posting.startTime.slice(0, 5)}</dd></div>
+                </dl>
+                <div className={styles.cardFooter}>
+                  <button type="button" onClick={() => setDetail(posting)} className={styles.note}>
+                    {posting.meetingPlace ? `집결 장소 ${posting.meetingPlace}` : "집결 장소 미입력 △"}
+                    {!posting.supplies?.trim() ? <span>준비물 미입력 △</span> : null}
+                  </button>
+                  <label className={styles.selection}>
+                    <input type="checkbox" aria-label={`${posting.farmName} 공고 선택`} checked={selectedIds.includes(posting.id)} disabled={!canSelect || submitting} onChange={() => setSelectedIds((ids) => ids.includes(posting.id) ? ids.filter((id) => id !== posting.id) : [...ids, posting.id])} />
+                  </label>
+                </div>
+                {state === "pending" || state === "rejected" ? <div className={styles.actions}>
+                  <button type="button" disabled={state !== "pending" || submitting} onClick={() => openReview("reject", posting)}>반려</button>
+                  <button type="button" disabled={state !== "pending" || submitting} onClick={() => openReview("approve", posting)}>승인</button>
+                </div> : null}
+              </article>
+            );
+          }) : null}
+        </div>
+        {!loading && !error && pageCount > 1 ? <nav className={styles.pagination} aria-label="공고 목록 페이지">
+          {Array.from({ length: pageCount }, (_, index) => <button key={index} type="button" aria-label={`${index + 1}페이지`} aria-current={currentPage === index ? "page" : undefined} onClick={() => setPage(index)}><span aria-hidden="true" /></button>)}
+        </nav> : null}
+        <p className="sr-only" role="status">{loading ? "불러오는 중" : error || `공고 ${filtered.length}건, ${pageCount ? currentPage + 1 : 0}/${pageCount}페이지, 선택 ${selectedIds.length}건`}</p>
+        <footer className={styles.matching}>
+          {selectedIds.length > 0 ? <div className={styles.selectionSummary}><span>{selectedIds.length}개 공고 선택</span><button type="button" onClick={() => setSelectedIds([])}>선택 해제</button></div> : null}
+          <button type="button" className={styles.matchingButton} disabled aria-describedby="matching-unavailable">매칭 관리로 이동</button>
+          <p id="matching-unavailable">매칭 관리 화면 연결 준비 중입니다.</p>
+        </footer>
 
-      {rejecting ? (
-        <CenterModal title="반려 사유" description="입력한 사유는 공고를 등록한 농가에 전달됩니다." confirmLabel="반려 확정" destructive submitting={submitting === rejecting.id} onCancel={() => setRejecting(null)} onConfirm={() => void reject()}>
-          <textarea value={reason} onChange={(event) => setReason(event.target.value)} maxLength={1000} rows={5} placeholder="수정이 필요한 내용을 구체적으로 입력해 주세요." className="w-full resize-none rounded-xl border border-[#d8dfd2] p-3 text-sm outline-none focus:border-[#c9695e]" />
-          <p className="mt-1 text-right text-xs text-[#9aa3a5]">{reason.length}/1000</p>
-        </CenterModal>
-      ) : null}
-    </CenterShell>
+        {detail ? <div className={styles.detailOverlay} role="dialog" aria-modal="true" aria-labelledby="posting-detail-title">
+          <article className={styles.detail}>
+            <button type="button" className={styles.detailClose} onClick={() => setDetail(null)} aria-label="상세 닫기">×</button>
+            <p className="mt-5 text-sm text-[#78904b]">{detail.farmName} · {detail.cityCounty}</p>
+            <h2 id="posting-detail-title" className="mt-2 text-[22px] font-semibold">{detail.title}</h2>
+            <p className="mt-4 whitespace-pre-wrap text-sm leading-6">{detail.description}</p>
+            <dl className={styles.detailFacts}>
+              <div><dt>작업일시</dt><dd>{formatWorkDate(detail.workDate)} {detail.startTime.slice(0, 5)}~{detail.endTime.slice(0, 5)}</dd></div>
+              <div><dt>집결 장소</dt><dd>{detail.meetingPlace || "미입력"}</dd></div>
+              <div><dt>농가 주소</dt><dd>{detail.farmAddress}</dd></div>
+              <div><dt>연락처</dt><dd>{detail.contactNumber}</dd></div>
+              <div><dt>작업·작물</dt><dd>{detail.workType} · {detail.crop}</dd></div>
+              <div><dt>임금</dt><dd>{formatWage(detail)}</dd></div>
+              <div><dt>준비물</dt><dd>{detail.supplies || "별도 안내 없음"}</dd></div>
+              <div><dt>주의사항</dt><dd>{detail.precautions || "없음"}</dd></div>
+            </dl>
+            {detail.beginnerGuide ? <p className="mt-4 whitespace-pre-wrap text-sm">초보자 안내: {detail.beginnerGuide}</p> : null}
+            {detail.latestReviewReason ? <p className="mt-4 whitespace-pre-wrap text-sm text-[#9e4c43]">검토 사유: {detail.latestReviewReason}</p> : null}
+            {postingStatus(detail) === "pending" ? <div className={styles.actions}>
+              <button type="button" disabled={submitting} onClick={() => openReview("reject", detail)}>반려</button>
+              <button type="button" disabled={submitting} onClick={() => openReview("approve", detail)}>승인</button>
+            </div> : null}
+          </article>
+        </div> : null}
+        {review ? <CenterModal variant="review" title={review.action === "approve" ? "승인 처리" : "반려 처리"} description={review.action === "reject" ? "반려 사유를 입력해주세요. 사유는 공고를 등록한 농가에 전달됩니다." : undefined} confirmLabel={review.action === "approve" ? "네" : "반려 확정"} cancelLabel={review.action === "approve" ? "아니오" : "취소"} confirmFirst={review.action === "approve"} submitting={submitting} onCancel={() => { if (!mutationInFlight.current) setReview(null); }} onConfirm={() => void confirmReview()}>
+          {review.action === "approve" ? <p className="mt-3 text-xs leading-5">선택한 농가 공고를 승인하시겠습니까?</p> : <label className={styles.reasonLabel}>반려 사유
+            <textarea className={styles.reasonInput} value={reason} onChange={(event) => { setReason(event.target.value); setReviewError(null); }} maxLength={1000} rows={3} aria-invalid={Boolean(reviewError)} aria-describedby={reviewError ? "posting-review-error" : undefined} />
+          </label>}
+          {reviewError ? <p id="posting-review-error" role="alert" className="mt-2 text-xs text-[#9e4c43]">{reviewError}</p> : null}
+        </CenterModal> : null}
+      </section>
+    </main>
   );
 }
-
