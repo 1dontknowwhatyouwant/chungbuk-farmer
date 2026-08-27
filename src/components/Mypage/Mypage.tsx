@@ -42,10 +42,15 @@ function Mypage({
   onGoTimeline,
 }: MypageProps) {
   const user = useAuthStore((state) => state.user);
+  const [isMounted, setIsMounted] = useState(false);
   const [education, setEducation] = useState<EducationCertification | null>(null);
   const [educationError, setEducationError] = useState("");
   const userName = user?.name || "정보 없음";
   const userTypeLabel = user?.userType === "FARM" ? "농가" : "교육이수자";
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     let disposed = false;
@@ -78,6 +83,13 @@ function Mypage({
       ? "이수 완료"
       : `${remainingHours}시간 미이수`
     : "교육 정보 확인 중";
+  const eligibilityStatus = education
+    ? education.eligibleToApply
+      ? "승인완료"
+      : "승인 대기"
+    : educationError
+      ? "확인 실패"
+      : "확인 중";
 
   return (
     <main className={pageClass}>
@@ -90,10 +102,10 @@ function Mypage({
             id="mypage-title"
             className="m-0 text-[20px] font-normal leading-[24px] text-[#2c393d]"
           >
-            {userName}
+            {isMounted ? userName : "정보 없음"}
           </h1>
           <span className="mt-[2px] text-[8px] leading-[10px] text-[#5db6ff]">
-            {userTypeLabel}
+            {isMounted ? userTypeLabel : "교육이수자"}
           </span>
           <div className="ml-auto flex items-center gap-[8px] text-[10px] leading-[12px]">
             <button
@@ -128,7 +140,13 @@ function Mypage({
               key={menu.label}
               type="button"
               className="flex w-[64px] cursor-pointer flex-col items-center gap-[11px] border-0 bg-transparent p-0 text-[12px] leading-[15px] text-[#424242]"
-              onClick={menu.label === "타임라인" ? onGoTimeline : undefined}
+              onClick={
+                menu.label === "타임라인"
+                  ? onGoTimeline
+                  : menu.label === "교육이수"
+                    ? onGoHome
+                    : undefined
+              }
             >
               <span className="flex h-[42px] items-center justify-center" aria-hidden><img src={menu.icon.src} alt="" className="max-h-[32px] max-w-[38px]" /></span>
               <span className="whitespace-nowrap">{menu.label}</span>
@@ -151,10 +169,10 @@ function Mypage({
             />
             <div className="min-w-0">
               <p className="m-0 text-[12px] leading-[15px] text-[#858282]">
-                {user?.name || "이름 정보 없음"}
+                {isMounted ? user?.name || "이름 정보 없음" : "이름 정보 없음"}
               </p>
               <p className="m-0 mt-[4px] text-[8px] leading-[10px] text-[#858282]">
-                {user?.phoneNumber || "연락처 정보 없음"}
+                {isMounted ? user?.phoneNumber || "연락처 정보 없음" : "연락처 정보 없음"}
               </p>
             </div>
           </div>
@@ -171,7 +189,7 @@ function Mypage({
             <div className="flex items-center gap-[31px]">
               <span className="text-[12px] leading-[15px]">신청 상태</span>
               <span className="text-[12px] leading-[15px] text-[#858282]">
-                승인완료
+                {eligibilityStatus}
               </span>
             </div>
             <p className="m-0 mt-[17px] text-[12px] leading-[15px] text-[#424242]">
@@ -180,6 +198,7 @@ function Mypage({
             <button
               type="button"
               className="mx-auto mt-[18px] block h-[48px] w-[290px] max-w-full cursor-pointer rounded-[12px] border-0 bg-[#d1e895] text-[16px] leading-[19px] text-black"
+              onClick={onGoAnnouncement}
             >
               신청하러 가기
             </button>
