@@ -26,7 +26,7 @@ const roleButtonProps = {
 };
 
 interface RegisterDetailProps {
-  onComplete?: () => void;
+  onComplete?: (userType: UserType) => void;
   onBackToRegister?: () => void;
 }
 
@@ -44,7 +44,7 @@ function RegisterDetail({ onComplete, onBackToRegister }: RegisterDetailProps) {
       const parsed = JSON.parse(pendingUser) as { loginId: string; name: string; password: string };
       await authApi.signup({ ...parsed, userType });
       window.localStorage.removeItem("chungbuk-farmer-pending-user");
-      onComplete?.();
+      onComplete?.(userType);
     } catch {
       setErrorMessage("회원 정보를 저장하지 못했습니다. 처음부터 다시 시도해 주세요.");
       window.setTimeout(() => {
