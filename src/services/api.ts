@@ -111,7 +111,17 @@ export const jobPostingApi = { list: (params?: { keyword?: string; region?: stri
 
 export type WorkAssignment = { id: number; jobPostingId: number; jobApplicationId: number; urbanFarmerUserId: number; urbanFarmerName: string; confirmedByUserId: number | null; confirmedByName: string | null; confirmedByContactNumber: string | null; farmName: string; farmAddress: string; farmContactNumber: string | null; crop: string; workType: string; workDate: string; startTime: string; endTime: string; recruitmentCapacity: number | null; meetingPlace: string; wageAmount: number; wageUnit: 'HOURLY' | 'DAILY'; supplies: string | null; precautions: string | null; status: string; attendanceStatus: string | null; completedAt: string | null; };
 export type ConfirmedWork = WorkAssignment;
-export type WorkAssignmentGuide = { workAssignmentId: number; workSummary: string | null; officialPrecautions: string | null; preparationChecklist: string | null; recommendedClothing: string | null; safetyRules: string | null; workSteps: string | null; beginnerTip: string | null; generator: string | null; };
+export type WorkAssignmentGuide = {
+  workAssignmentId: number;
+  workSummary: string | null;
+  officialPrecautions: string | null;
+  preparationChecklist: string[];
+  recommendedClothing: string[];
+  safetyRules: string[];
+  workSteps: string[];
+  beginnerTip: string | null;
+  generator: string | null;
+};
 export type ConfirmedWorkListResponse = WorkAssignment[] | { content: WorkAssignment[] } | { data: WorkAssignment[] };
 export const confirmedWorkApi = {
   list: (params?: { view?: 'ALL' | 'UPCOMING' | 'PAST'; page?: number; size?: number }) => api.get<ConfirmedWorkListResponse>('/api/urban-farmers/me/work-assignments', { params }),
