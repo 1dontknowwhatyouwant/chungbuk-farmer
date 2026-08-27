@@ -10,7 +10,11 @@
 
 # next.js
 /.next/
+**/.next/
 /out/
+
+# Local verification copies (never commit temporary app copies)
+/.*-check/
 
 # production
 /build

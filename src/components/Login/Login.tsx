@@ -2,25 +2,14 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import {
-  apple,
-  kakao,
   chungbukFarmerLogo,
-  naver,
-  signupEllipseWide,
   signupEye,
   signupMountainLarge,
   signupMountainSmall,
 } from "../../assets/assets";
 import Button from "../common/button/Button";
-import { authApi } from "../../services/api";
+import { ACCESS_TOKEN_EXPIRES_AT_KEY, ACCESS_TOKEN_KEY, authApi } from "../../services/api";
 import { useAuthStore } from "../../stores/useAuthStore";
-
-const socialLogins = [
-  { label: "네이버 로그인", image: naver.src },
-  { label: "카카오 로그인", image: kakao.src },
-  { label: "Apple 로그인", image: apple.src },
-  { label: "추가 로그인", image: signupEllipseWide.src },
-];
 
 const pageClass =
   "min-h-screen bg-[#1f1f1f] text-[#251f1f] sm:flex sm:items-center sm:justify-center sm:px-4 sm:py-8";
@@ -68,14 +57,9 @@ function Login({
 
   useEffect(() => {
     let cancelled = false;
-
     const restoreLogin = async () => {
-      const accessToken =
-        window.localStorage.getItem("chungbuk-farmer-access-token") ??
-        window.sessionStorage.getItem("chungbuk-farmer-access-token");
-
+      const accessToken = window.localStorage.getItem(ACCESS_TOKEN_KEY) ?? window.sessionStorage.getItem(ACCESS_TOKEN_KEY);
       if (!accessToken) return;
-
       try {
         const { data } = await authApi.me();
         if (!cancelled) {
@@ -83,15 +67,12 @@ function Login({
           onLoginSuccess?.();
         }
       } catch {
-        window.localStorage.removeItem("chungbuk-farmer-access-token");
-        window.sessionStorage.removeItem("chungbuk-farmer-access-token");
+        window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+        window.sessionStorage.removeItem(ACCESS_TOKEN_KEY);
       }
     };
-
     void restoreLogin();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -116,16 +97,18 @@ function Login({
 
     try {
       const { data } = await authApi.login(loginId, password);
-      window.localStorage.removeItem("chungbuk-farmer-access-token");
-      window.sessionStorage.removeItem("chungbuk-farmer-access-token");
+      window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+      window.sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+      window.localStorage.removeItem("chungbuk-farmer-user");
       (rememberMe ? window.localStorage : window.sessionStorage).setItem(
-        "chungbuk-farmer-access-token",
+        ACCESS_TOKEN_KEY,
         data.accessToken,
       );
+      const expiresAt = Date.now() + data.expiresInSeconds * 1000;
+      (rememberMe ? window.localStorage : window.sessionStorage).setItem(ACCESS_TOKEN_EXPIRES_AT_KEY, String(expiresAt));
 
-      setUser({
-        ...data.user,
-      });
+      const { data: currentUser } = await authApi.me();
+      setUser(currentUser);
       onLoginSuccess?.();
     } catch {
       setErrorMessage("가입한 아이디와 비밀번호를 확인해 주세요.");
@@ -239,19 +222,6 @@ function Login({
           >
             회원가입
           </button>
-        </div>
-
-        <div className="relative z-10 mt-[43px] flex justify-between px-[20px] max-[360px]:px-0">
-          {socialLogins.map((item) => (
-            <button
-              key={item.label}
-              type="button"
-              aria-label={item.label}
-              className="flex h-[64px] w-[64px] cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0"
-            >
-              <img src={item.image} alt="" className="h-full w-full" />
-            </button>
-          ))}
         </div>
 
         <img
