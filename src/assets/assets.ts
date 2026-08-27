@@ -16,7 +16,6 @@ import homeHomeOff from "./images/home/homeOff.png";
 import homeAnnouncementOff from "./images/home/announcementOff.png";
 import homeAccountOn from "./images/home/accountOn.png";
 import homeAccountOff from "./images/home/accountOff.png";
-import homeAlarm from "./images/home/alarm.png";
 import homeLogo from "./images/home/chungbuk-farmer-logo.svg";
 
 export {
@@ -38,6 +37,5 @@ export {
   homeAnnouncementOff,
   homeAccountOn,
   homeAccountOff,
-  homeAlarm,
   homeLogo,
 };

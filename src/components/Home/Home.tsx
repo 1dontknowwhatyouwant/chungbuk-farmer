@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import {
-  homeAlarm,
   homeLogo,
   homeCarrot,
   homeCorn,
@@ -10,6 +9,7 @@ import {
   homeTomato,
 } from "../../assets/assets";
 import BottomNav from "../common/BottomNav/BottomNav";
+import { marketPriceApi, type MarketPrice } from "../../services/api";
 
 type CropItem = {
   name: string;
@@ -35,8 +35,8 @@ interface HomeProps {
 }
 
 function Home({ onGoToMypage, onGoToAnnouncement, onGoToWorkCondition }: HomeProps) {
-  const [imageIndex, setImageIndex] = useState(0);
   const [priceIndex, setPriceIndex] = useState(0);
+  const [marketItems, setMarketItems] = useState<CropItem[]>(cropItems);
   const [hasApplication, setHasApplication] = useState(false);
   const [workCondition, setWorkCondition] = useState<WorkCondition>({ appliedAt: "2025.06.25", regionName: "충북 청주시", days: ["화", "금"], status: "PENDING" });
 
@@ -45,21 +45,30 @@ function Home({ onGoToMypage, onGoToAnnouncement, onGoToWorkCondition }: HomePro
     if (saved) {
       try { setWorkCondition(JSON.parse(saved) as WorkCondition); setHasApplication(true); } catch { /* ignore malformed local data */ }
     }
-    const imageTimer = window.setInterval(() => {
-      setImageIndex((current) => (current + 1) % cropImages.length);
-    }, 2400);
-
     const priceTimer = window.setInterval(() => {
       setPriceIndex((current) => (current + 1) % cropItems.length);
-    }, 3200);
+    }, 2400);
+
+    void marketPriceApi.list(cropItems.map((crop) => crop.name)).then(({ data }) => {
+      if (!Array.isArray(data) || data.length === 0) return;
+      const pricesByCrop = new Map(data.map((item: MarketPrice) => [item.crop, item]));
+      const syncedItems = cropItems.map((item) => {
+        const price = pricesByCrop.get(item.name);
+        return price
+          ? { ...item, today: String(price.today), yesterday: String(price.yesterday) }
+          : item;
+      });
+      setMarketItems(syncedItems);
+    }).catch(() => {
+      // 시세 API가 일시적으로 unavailable해도 홈은 기본 시세로 표시한다.
+    });
 
     return () => {
-      window.clearInterval(imageTimer);
-      window.clearInterval(priceTimer);
+    window.clearInterval(priceTimer);
     };
   }, []);
 
-  const currentCrop = cropItems[priceIndex];
+  const currentCrop = marketItems[priceIndex % marketItems.length] ?? cropItems[0];
 
   return (
     <main className="min-h-screen bg-[#1f1f1f] sm:flex sm:items-center sm:justify-center sm:px-4 sm:py-8">
@@ -72,14 +81,6 @@ function Home({ onGoToMypage, onGoToAnnouncement, onGoToWorkCondition }: HomePro
           alt="도시농부+"
           className="pointer-events-none absolute left-[6.5%] top-[78px] h-[38px] w-[27.6%] object-contain object-left"
         />
-        <button
-          type="button"
-          className="absolute right-[12.2%] top-[78px] border-0 bg-transparent p-0"
-          aria-label="알림"
-        >
-          <img src={homeAlarm.src} alt="" className="h-[54px] w-[54px]" />
-        </button>
-
         <h1
           className="absolute left-[6.2%] top-[137px] text-[clamp(20px,6vw,24px)] font-medium leading-[29px] text-[#475559]"
         >
@@ -96,36 +97,40 @@ function Home({ onGoToMypage, onGoToAnnouncement, onGoToWorkCondition }: HomePro
                 src={image}
                 alt=""
                 className={`absolute inset-0 h-full w-full object-contain transition-opacity duration-500 drop-shadow-[0_14px_12px_rgba(0,0,0,0.26)] ${
-                  index === imageIndex ? "opacity-100" : "opacity-0"
+                  index === priceIndex ? "opacity-100" : "opacity-0"
                 }`}
                 />
               ))}
           </div>
 
-          <div className="absolute left-[162px] top-[200px] text-[10px] leading-[12px] text-[#DBE3F2] opacity-65">
+          <div className="absolute left-[102px] top-[20px] text-[10px] leading-[12px] text-[#DBE3F2] opacity-65">
             개당
           </div>
-          <div className="absolute left-[199px] top-[200px] text-[10px] leading-[12px] text-[#DBE3F2] opacity-65">
+          <div className="absolute left-[139px] top-[20px] text-[10px] leading-[12px] text-[#DBE3F2] opacity-65">
             1
           </div>
-          <div className="absolute left-[162px] top-[219px] text-[14px] font-medium leading-[17px] text-[#EFF5FF]">
+          <div className="absolute left-[102px] top-[39px] text-[14px] font-medium leading-[17px] text-[#EFF5FF]">
             어제 시세
           </div>
-          <div className="absolute left-[266px] top-[219px] text-[14px] font-medium leading-[17px] text-[#EFF5FF]">
+          <div className="absolute left-[206px] top-[39px] text-[14px] font-medium leading-[17px] text-[#EFF5FF]">
             오늘 시세
           </div>
 
-          <div className="absolute left-[162px] top-[241px] text-[23px] font-medium leading-[27px] text-white">
-            {currentCrop.yesterday}
+          <div className="absolute left-[102px] top-[60px] flex items-baseline whitespace-nowrap">
+            <span className="text-[23px] font-medium leading-[27px] text-white">
+              {currentCrop.yesterday}
+            </span>
+            <span className="ml-1 text-[16px] font-normal leading-[19px] text-[#DDDEE0]">
+              원
+            </span>
           </div>
-          <div className="absolute left-[218px] top-[245px] text-[16px] font-normal leading-[19px] text-[#DDDEE0]">
-            원
-          </div>
-          <div className="absolute left-[266px] top-[241px] text-[23px] font-medium leading-[27px] text-white">
-            {currentCrop.today}
-          </div>
-          <div className="absolute left-[322px] top-[245px] text-[16px] font-normal leading-[19px] text-[#DDDEE0]">
-            원
+          <div className="absolute left-[206px] top-[60px] flex items-baseline whitespace-nowrap">
+            <span className="text-[23px] font-medium leading-[27px] text-white">
+              {currentCrop.today}
+            </span>
+            <span className="ml-1 text-[16px] font-normal leading-[19px] text-[#DDDEE0]">
+              원
+            </span>
           </div>
         </div>
 
