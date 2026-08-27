@@ -14,12 +14,24 @@ const initial: FarmProfilePayload = {
   businessRegistrationNumber: "",
   farmAreaPyeong: 1,
 };
+const cityCountyOptions = [
+  ["CHEONGJU", "청주시"],
+  ["CHUNGJU", "충주시"],
+  ["JECHEON", "제천시"],
+  ["BOEUN", "보은군"],
+  ["OKCHEON", "옥천군"],
+  ["YEONGDONG", "영동군"],
+  ["JEUNGPYEONG", "증평군"],
+  ["JINCHEON", "진천군"],
+  ["GOESAN", "괴산군"],
+  ["EUMSEONG", "음성군"],
+  ["DANYANG", "단양군"],
+] as const;
 const fields: [keyof FarmProfilePayload, string][] = [
   ["farmName", "농가명"],
   ["representativeName", "농가주 이름"],
   ["contactNumber", "대표 연락처"],
   ["farmAddress", "농지 주소"],
-  ["cityCounty", "시/군/구"],
 ];
 
 export default function FarmerMypage() {
@@ -54,7 +66,7 @@ export default function FarmerMypage() {
       if (exists) await farmProfileApi.update(payload);
       else await farmProfileApi.create(payload);
       setExists(true);
-      router.back();
+      router.push("/farmer-home");
     } catch {
       setMessage("프로필 저장에 실패했습니다. 입력값을 확인해 주세요.");
     }
@@ -68,7 +80,9 @@ export default function FarmerMypage() {
         <header className="relative flex h-[100px] items-end justify-center bg-[#e9ece1] pb-4 text-[18px]">
           <button
             type="button"
-            onClick={() => router.back()}
+            onClick={() => {
+              window.location.assign("/farmer-home");
+            }}
             className="absolute bottom-4 left-6 border-0 bg-transparent text-2xl"
           >
             ‹
@@ -91,6 +105,24 @@ export default function FarmerMypage() {
               />
             </label>
           ))}
+          <label className="block text-xs">
+            시/군/구
+            <select
+              value={profile.cityCounty}
+              onChange={(e) => set("cityCounty", e.target.value)}
+              required
+              className="mt-2 h-[34px] w-full rounded-xl border-0 bg-[#e0e6ef] px-3 outline-none"
+            >
+              <option value="" disabled>
+                지역을 선택해 주세요
+              </option>
+              {cityCountyOptions.map(([code, name]) => (
+                <option key={code} value={code}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </label>
           <h2 className="pt-3 text-[18px]">농업 활동 정보</h2>
           <input
             value={crops}
