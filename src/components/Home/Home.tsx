@@ -17,6 +17,7 @@ type CropItem = {
   today: string;
   yesterday: string;
 };
+type WorkCondition = { appliedAt: string; regionName: string; days: string[]; status?: "PENDING" | "APPROVED" };
 
 const cropImages = [homeTomato.src, homeCorn.src, homeCarrot.src, homePotato.src];
 
@@ -30,13 +31,20 @@ const cropItems: CropItem[] = [
 interface HomeProps {
   onGoToMypage?: () => void;
   onGoToAnnouncement?: () => void;
+  onGoToWorkCondition?: () => void;
 }
 
-function Home({ onGoToMypage, onGoToAnnouncement }: HomeProps) {
+function Home({ onGoToMypage, onGoToAnnouncement, onGoToWorkCondition }: HomeProps) {
   const [imageIndex, setImageIndex] = useState(0);
   const [priceIndex, setPriceIndex] = useState(0);
+  const [hasApplication, setHasApplication] = useState(false);
+  const [workCondition, setWorkCondition] = useState<WorkCondition>({ appliedAt: "2025.06.25", regionName: "충북 청주시", days: ["화", "금"], status: "PENDING" });
 
   useEffect(() => {
+    const saved = window.localStorage.getItem("chungbuk-farmer-work-condition");
+    if (saved) {
+      try { setWorkCondition(JSON.parse(saved) as WorkCondition); setHasApplication(true); } catch { /* ignore malformed local data */ }
+    }
     const imageTimer = window.setInterval(() => {
       setImageIndex((current) => (current + 1) % cropImages.length);
     }, 2400);
@@ -130,6 +138,7 @@ function Home({ onGoToMypage, onGoToAnnouncement }: HomeProps) {
         <div
           className="box-border absolute left-[6.2%] top-[362px] h-[174px] w-[87.6%] rounded-[12px] border border-[rgba(215,228,183,0.42)] bg-[#FFFDFD] shadow-[0_2px_10.4px_rgba(0,0,0,0.28)]"
         >
+          {hasApplication ? <>
           <div
             className="box-border absolute left-[20px] top-[12px] h-[26px] w-[126px] rounded-[8px] border border-[#E8EAEC] bg-[rgba(217,217,217,0.22)]"
           />
@@ -138,7 +147,7 @@ function Home({ onGoToMypage, onGoToAnnouncement }: HomeProps) {
           </div>
 
           <div className="absolute left-[277px] top-[15px] text-[18px] font-medium leading-[21px] bg-[linear-gradient(0deg,#D9D9D9_-61.9%,#373737_173.81%)] bg-clip-text text-transparent">
-            승인 대기
+            {workCondition.status === "APPROVED" ? "승인됨" : "승인 대기"}
           </div>
 
           <div className="absolute left-[20px] top-[53px] text-[16px] font-light leading-[19px] text-[#4E4F51]">
@@ -152,24 +161,31 @@ function Home({ onGoToMypage, onGoToAnnouncement }: HomeProps) {
           </div>
 
           <div className="absolute left-[20px] top-[81px] text-[12px] font-medium leading-[14px] text-[#2A84C4]">
-            2025.06.25
+            {workCondition.appliedAt}
           </div>
           <div className="absolute left-[122px] top-[81px] text-[12px] font-medium leading-[14px] text-[#2A84C4]">
-            충남 서산시
+            {workCondition.regionName}
           </div>
           <div className="absolute left-[224px] top-[81px] text-[12px] font-medium leading-[14px] text-[#2A84C4]">
-            화
+            {workCondition.days.join(", ")}
           </div>
           <div className="absolute left-[244px] top-[81px] text-[12px] font-medium leading-[14px] text-[#2A84C4]">
-            금
+            
           </div>
 
           <button
             type="button"
+            onClick={onGoToWorkCondition}
             className="absolute left-[95px] top-[117px] box-border h-[34px] w-[162px] rounded-[12px] bg-[#D1E895] text-[14px] font-medium leading-[17px] text-[#30322B]"
           >
             내용 수정하기
           </button>
+          </> : <div className="flex h-full flex-col items-center justify-center gap-4 text-[16px] text-[#757575]">
+            <span>신청한 희망 근무 조건이 없습니다.</span>
+            <button type="button" onClick={onGoToWorkCondition} className="h-[34px] w-[162px] rounded-[12px] bg-[#D1E895] text-[14px] font-medium text-[#30322B]">
+              신청하기
+            </button>
+          </div>}
         </div>
 
         <div className="absolute left-[6.2%] top-[557px] text-[clamp(20px,6vw,24px)] font-medium leading-[29px] text-[#475559]">
@@ -185,12 +201,12 @@ function Home({ onGoToMypage, onGoToAnnouncement }: HomeProps) {
           <div className="absolute left-[16px] top-[43px] text-[18px] font-light leading-[21px] text-black">
             농업안전 기초
           </div>
-          <button
-            type="button"
+          <a
+            href="https://agriedu.net/"
             className="absolute left-[24px] top-[118px] text-[16px] font-normal leading-[19px] text-[#3F4433]"
           >
             이수 받기
-          </button>
+          </a>
         </div>
 
         <div
@@ -202,12 +218,12 @@ function Home({ onGoToMypage, onGoToAnnouncement }: HomeProps) {
           <div className="absolute left-[16px] top-[43px] w-[88px] text-[18px] font-light leading-[21px] text-black">
             도시 농업 이해와 기초
           </div>
-          <button
-            type="button"
+          <a
+            href="https://agriedu.net/"
             className="absolute left-[24px] top-[118px] text-[16px] font-normal leading-[19px] text-[#3F4433]"
           >
             이수 받기
-          </button>
+          </a>
         </div>
 
         <div

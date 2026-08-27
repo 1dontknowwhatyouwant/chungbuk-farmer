@@ -37,7 +37,7 @@ function Mypage({
   onGoTimeline,
 }: MypageProps) {
   const user = useAuthStore((state) => state.user);
-  const userName = user?.name || "유저 이름";
+  const userName = user?.name || "정보 없음";
   const userTypeLabel = user?.userType === "FARM" ? "농가" : "교육이수자";
 
   return (
@@ -112,10 +112,10 @@ function Mypage({
             />
             <div className="min-w-0">
               <p className="m-0 text-[12px] leading-[15px] text-[#858282]">
-                수박바
+                {user?.name || "이름 정보 없음"}
               </p>
               <p className="m-0 mt-[4px] text-[8px] leading-[10px] text-[#858282]">
-                010 - 3456 - 7890
+                {user?.phoneNumber || "연락처 정보 없음"}
               </p>
             </div>
           </div>
@@ -174,12 +174,12 @@ function Mypage({
                 </span>
               </div>
             </div>
-            <button
-              type="button"
-              className="mx-auto mt-[9px] block h-[39px] w-[220px] cursor-pointer rounded-[12px] border-0 bg-[#c2e762] text-[12px] leading-[15px] text-[#424242] shadow-[0_2px_4px_rgba(0,0,0,.25)]"
+            <a
+              href="https://agriedu.net/"
+              className="mx-auto mt-[9px] block h-[39px] w-[220px] cursor-pointer rounded-[12px] border-0 bg-[#c2e762] text-center text-[12px] leading-[39px] text-[#424242] no-underline shadow-[0_2px_4px_rgba(0,0,0,.25)]"
             >
               교육 들으러 바로 가기
-            </button>
+            </a>
           </div>
         </section>
 
