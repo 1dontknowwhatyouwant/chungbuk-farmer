@@ -30,6 +30,7 @@ export default function MypagePage() {
       onDeleteAccount={handleDeleteAccount}
       onLogout={handleLogout}
       onGoHome={() => router.push("/home")}
+      onGoTimeline={() => router.push("/mypage/timeline")}
     />
   );
 }
