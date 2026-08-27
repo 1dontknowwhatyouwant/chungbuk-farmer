@@ -26,6 +26,7 @@ interface MypageProps {
   onDeleteAccount?: () => void;
   onLogout?: () => void;
   onGoHome?: () => void;
+  onGoTimeline?: () => void;
 }
 
 function Mypage({
@@ -33,6 +34,7 @@ function Mypage({
   onDeleteAccount,
   onLogout,
   onGoHome,
+  onGoTimeline,
 }: MypageProps) {
   const user = useAuthStore((state) => state.user);
   const userName = user?.name || "유저 이름";
@@ -87,6 +89,7 @@ function Mypage({
               key={menu.label}
               type="button"
               className="flex w-[64px] cursor-pointer flex-col items-center gap-[11px] border-0 bg-transparent p-0 text-[12px] leading-[15px] text-[#424242]"
+              onClick={menu.label === "타임라인" ? onGoTimeline : undefined}
             >
               <span className="flex h-[42px] items-center justify-center" aria-hidden><img src={menu.icon.src} alt="" className="max-h-[32px] max-w-[38px]" /></span>
               <span className="whitespace-nowrap">{menu.label}</span>
