@@ -84,8 +84,13 @@ export type FarmProfilePayload = {
 export type FarmProfile = FarmProfilePayload & {
   id: number;
   status: FarmProfileStatus;
-export type FarmProfileStatus = 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'INACTIVE' | 'DRAFT';
-export type FarmProfile = { id: number; farmName: string; representativeName: string; contactNumber: string; farmAddress: string; cityCounty: string; crops: string[]; mainActivities: string; businessRegistrationNumber?: string | null; farmAreaPyeong: number; status: FarmProfileStatus; };
+  reviewerId: number | null;
+  reviewerName: string | null;
+  reviewedAt: string | null;
+  rejectionReason: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
 export type AdminFarmProfile = FarmProfile & {
   reviewerId: number | null;
   reviewerName: string | null;
@@ -113,7 +118,6 @@ export type FarmOwnershipReview = {
   businessRegistrationNumberSnapshot: string | null;
   farmAreaPyeongSnapshot: number;
 };
-export type FarmProfilePayload = Omit<FarmProfile, "id" | "status">;
 export const farmProfileApi = {
   get: () => api.get<FarmProfile>("/api/farm-profiles/me"),
   create: (payload: FarmProfilePayload) => api.post<FarmProfile>("/api/farm-profiles", payload),
@@ -241,7 +245,6 @@ const marketPriceClient = axios.create({
 });
 
 export type MarketPriceDirection = 'UP' | 'DOWN' | 'UNCHANGED' | 'UNKNOWN';
-export const jobPostingApi = { list: (params?: { keyword?: string; region?: string; crop?: string; dateFrom?: string; dateTo?: string; workType?: string; recruitmentStatus?: 'OPEN' | 'CLOSED' | 'ALL'; page?: number; size?: number }) => api.get<JobPostingListResponse>('/api/job-postings', { params }), get: (id: number | string, includeClosed = false) => api.get<PublicJobPosting>(`/api/job-postings/${id}`, { params: { includeClosed } }) };
 
 export type WorkAssignment = { id: number; jobPostingId: number; jobApplicationId: number; urbanFarmerUserId: number; urbanFarmerName: string; confirmedByUserId: number | null; confirmedByName: string | null; confirmedByContactNumber: string | null; farmName: string; farmAddress: string; farmContactNumber: string | null; crop: string; workType: string; workDate: string; startTime: string; endTime: string; recruitmentCapacity: number | null; meetingPlace: string; wageAmount: number; wageUnit: 'HOURLY' | 'DAILY'; supplies: string | null; precautions: string | null; status: string; attendanceStatus: string | null; completedAt: string | null; };
 export type ConfirmedWork = WorkAssignment;
@@ -278,9 +281,6 @@ export type MarketPriceItem = {
   direction: MarketPriceDirection;
   changeRate: number;
 };
-  direction: 'UP' | 'DOWN' | 'UNCHANGED' | 'UNKNOWN';
-  changeRate: number;
-};
 
 export type MarketPriceResponse = {
   provider: string;
@@ -294,10 +294,6 @@ export type MarketPriceResponse = {
   totalPages: number;
   items: MarketPriceItem[];
 };
-export const marketPriceApi = {
-  latest: (params?: { marketType?: 'RETAIL' | 'WHOLESALE'; categoryCode?: string; keyword?: string; page?: number; size?: number }) =>
-    marketPriceClient.get<MarketPriceResponse>('/api/market-prices/latest', { params }),
-
 export const marketPriceApi = {
   latest: (params?: {
     marketType?: 'RETAIL' | 'WHOLESALE';

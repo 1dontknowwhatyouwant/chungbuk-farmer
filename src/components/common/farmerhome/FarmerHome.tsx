@@ -111,10 +111,6 @@ export default function FarmerHome() {
     logout();
     void authApi.logout().catch(() => undefined);
     router.push("/login");
-  useEffect(() => { void farmProfileApi.get().then(({ data }) => setProfile(data)).catch(() => undefined); }, []);
-  const handleLogout = async () => {
-    try { await authApi.logout(); }
-    finally { logout(); router.replace("/login"); }
   };
   const directionArrow =
     marketPrice?.direction === "UP" ? "▲" : marketPrice?.direction === "DOWN" ? "▼" : "";
@@ -140,23 +136,6 @@ export default function FarmerHome() {
         <div className="absolute left-[42px] top-[257px] h-[104px] w-[316px] rounded-xl border border-[#e4e4e4] bg-[#fefefe] px-[18px] py-[19px] text-black">
           <div className="flex items-start justify-between">
             <span className="text-[18px] leading-[21px]">
-        <div className="absolute right-5 top-[66px] flex gap-3 text-[11px] text-[#424242]">
-          <button type="button" className="border-0 bg-transparent p-0" onClick={() => void handleLogout()}>로그아웃</button>
-          <button type="button" className="border-0 bg-transparent p-0 text-[#858282]" onClick={handleDeleteAccount}>계정 삭제</button>
-        </div>
-        <div
-          className="mx-auto mt-[92px] h-[104px] w-[242px] rounded-xl bg-[#4e3a29] shadow-inner"
-          aria-label="농장 일러스트"
-        >
-          <img
-            src={homeTomato.src}
-            alt=""
-            className="mx-auto h-full w-[145px] object-contain"
-          />
-        </div>
-        <div className="mx-auto mt-[18px] rounded-xl border border-[#e4e4e4] bg-white px-[14px] py-[12px] text-black">
-          <div className="flex items-center justify-between">
-            <span className="text-[18px]">
               {profile?.farmName || (user?.name ? `${user.name} 농가` : "농가 정보 없음")}
             </span>
             <div className="flex items-center gap-[11px]">
