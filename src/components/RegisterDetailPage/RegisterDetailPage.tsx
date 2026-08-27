@@ -6,7 +6,7 @@ export default function RegisterDetailPage() {
   return (
     <RegisterDetail
       onComplete={(userType) =>
-        router.push(userType === "FARM" ? "/farmer-home" : "/home")
+        router.push(userType === "FARM" ? "/farmer-mypage?from=register" : "/home")
       }
       onBackToRegister={() => router.push("/register")}
     />
