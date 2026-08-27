@@ -23,6 +23,15 @@ import homeAccountOn from "./images/home/accountOn.png";
 import homeAccountOff from "./images/home/accountOff.png";
 import homeAlarm from "./images/home/alarm.png";
 import homeLogo from "./images/home/chungbuk-farmer-logo.svg";
+import farmerHomeHero from "./images/home/Tomato_Head.svg";
+import marketTomato from "./images/home/Tomato_GNB.svg";
+import logoutIcon from "./images/home/logout.svg";
+import cornHero from "./images/home/Corn_Head.svg";
+import marketCorn from "./images/home/corn_GNB.svg";
+import carrotHero from "./images/home/Carrot_Head.svg";
+import marketCarrot from "./images/home/carrot_GNB.svg";
+import potatoHero from "./images/home/Potato_Head.svg";
+import marketPotato from "./images/home/potato_GNB.svg";
 
 export {
   naver,
@@ -50,4 +59,13 @@ export {
   homeAccountOff,
   homeAlarm,
   homeLogo,
+  farmerHomeHero,
+  marketTomato,
+  logoutIcon,
+  cornHero,
+  marketCorn,
+  carrotHero,
+  marketCarrot,
+  potatoHero,
+  marketPotato,
 };
