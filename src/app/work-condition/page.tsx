@@ -27,6 +27,7 @@ export default function WorkConditionPage() {
   const [vehicle, setVehicle] = useState(true);
   const [selectedDays, setSelectedDays] = useState<string[]>(["월"]);
   const [isDayPickerOpen, setIsDayPickerOpen] = useState(false);
+  const [isExperiencePickerOpen, setIsExperiencePickerOpen] = useState(false);
   const [region, setRegion] = useState("CHEONGJU");
   const [startDate, setStartDate] = useState("2026-08-27");
   const [endDate, setEndDate] = useState("2026-12-31");
@@ -54,6 +55,13 @@ export default function WorkConditionPage() {
     );
   };
   const orderedSelectedDays = weekDays.filter((day) => selectedDays.includes(day));
+  const experienceOptions = [
+    ["NONE", "없음"],
+    ["1_TO_3", "1~3"],
+    ["4_TO_10", "4~10"],
+    ["11_OR_MORE", "11 이상"],
+  ] as const;
+  const selectedExperience = experienceOptions.find(([value]) => value === experience)?.[1] ?? "없음";
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -88,20 +96,20 @@ export default function WorkConditionPage() {
           </div>
 
           <label className="mt-5 block text-[14px]">희망 근무 지역<select name="region" value={region} onChange={(event) => setRegion(event.target.value)} className={`block w-full ${fieldClass}`}><option value="" disabled>지역을 선택해주세요</option>{workRegions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-          <div className="mt-5 grid grid-cols-[1fr_1.25fr] gap-3 text-[14px]">
-            <label>
+          <div className="mt-5 grid grid-cols-[96px_96px] gap-[56px] text-[14px]">
+            <label className="whitespace-nowrap">
             희망 요일
             <div className="relative mt-2">
-              <button type="button" onClick={() => setIsDayPickerOpen(!isDayPickerOpen)} aria-expanded={isDayPickerOpen} className="flex h-[31px] w-full items-center justify-between rounded-[12px] bg-[#f1f3f6] px-3 text-left text-[12px] text-[#5c5c5c] shadow-[0_3px_3.8px_rgba(0,0,0,0.14)]">
+              <button type="button" onClick={() => { setIsDayPickerOpen(!isDayPickerOpen); setIsExperiencePickerOpen(false); }} aria-expanded={isDayPickerOpen} className="flex h-[31px] w-full items-center justify-between rounded-[12px] bg-[#f1f3f6] px-3 text-left text-[14px] text-[#5c5c5c] shadow-[0_3px_3.8px_rgba(0,0,0,0.14)]">
                 <span>{orderedSelectedDays.length ? orderedSelectedDays.join(", ") : "요일을 선택해주세요"}</span>
-                <span className="text-[12px]">{isDayPickerOpen ? "▲" : "▼"}</span>
+                <span className="mb-1 h-1.5 w-1.5 rotate-45 border-b border-r border-[#777]" />
               </button>
               {isDayPickerOpen && (
-                <div className="absolute left-0 top-[32px] z-10 flex w-[210px] overflow-hidden rounded-[12px] border border-[#d8dddf] bg-white shadow-lg">
+                <div className="absolute left-0 top-[36px] z-20 max-h-[180px] w-full overflow-y-auto rounded-[12px] bg-[#fff] p-1.5 shadow-[0_4px_10px_rgba(0,0,0,0.18)] [scrollbar-color:#cfcfcf_transparent]">
                   {weekDays.map((day) => {
                     const isSelected = selectedDays.includes(day);
                     return (
-                      <button key={day} type="button" onClick={() => toggleDay(day)} aria-pressed={isSelected} className={`h-[38px] min-w-0 flex-1 text-[12px] ${isSelected ? "bg-[#d1f7af] text-[#35402f]" : "bg-white text-[#5c5c5c]"}`}>
+                      <button key={day} type="button" onClick={() => toggleDay(day)} aria-pressed={isSelected} className={`mb-1 block h-[30px] w-full rounded-[7px] text-[14px] last:mb-0 ${isSelected ? "bg-[#e5edf8] text-[#5c5c5c]" : "bg-[#f1f4f9] text-[#5c5c5c]"}`}>
                         {day}
                       </button>
                     );
@@ -110,7 +118,18 @@ export default function WorkConditionPage() {
               )}
             </div>
             </label>
-            <label>농업 작업 경험 횟수<select name="experience" value={experience} onChange={(event) => setExperience(event.target.value)} className={`block w-full ${fieldClass}`}><option value="NONE">없음</option><option value="1_TO_3">1~3회</option><option value="4_TO_10">4~10회</option><option value="11_OR_MORE">11회 이상</option></select></label>
+            <label className="whitespace-nowrap">
+              농업 작업 경험 횟수
+              <div className="relative mt-2">
+                <input type="hidden" name="experience" value={experience} />
+                <button type="button" onClick={() => { setIsExperiencePickerOpen(!isExperiencePickerOpen); setIsDayPickerOpen(false); }} aria-expanded={isExperiencePickerOpen} className="flex h-[31px] w-full items-center justify-between rounded-[12px] bg-[#f1f3f6] px-3 text-left text-[14px] text-[#5c5c5c] shadow-[0_3px_3.8px_rgba(0,0,0,0.14)]">
+                  <span>{selectedExperience}</span><span className="mb-1 h-1.5 w-1.5 rotate-45 border-b border-r border-[#777]" />
+                </button>
+                {isExperiencePickerOpen && <div className="absolute left-0 top-[36px] z-20 w-full rounded-[12px] bg-white p-1.5 shadow-[0_4px_10px_rgba(0,0,0,0.18)]">
+                  {experienceOptions.map(([value, label]) => <button key={value} type="button" onClick={() => { setExperience(value); setIsExperiencePickerOpen(false); }} className={`mb-1 block h-[30px] w-full rounded-[7px] text-[14px] last:mb-0 ${experience === value ? "bg-[#e5edf8]" : "bg-[#f1f4f9]"}`}>{label}</button>)}
+                </div>}
+              </div>
+            </label>
           </div>
           <div className="mt-5 grid grid-cols-2 gap-3"><label className="text-[14px]">희망 시작일<input name="startDate" type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} className={`block w-full ${fieldClass}`} /></label><label className="text-[14px]">희망 종료일<input name="endDate" type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} className={`block w-full ${fieldClass}`} /></label></div>
           <div className="mt-5 flex items-center justify-between text-[14px]">이동 수단 여부<button type="button" onClick={() => setVehicle(!vehicle)} aria-pressed={vehicle} className={`relative h-[23px] w-[46px] rounded-[14px] ${vehicle ? "bg-[#5e5c59]" : "bg-[#c8cdcf]"}`}><span className={`absolute top-[1px] size-5 rounded-full bg-white shadow transition-all ${vehicle ? "right-1" : "left-1"}`} /></button></div>
