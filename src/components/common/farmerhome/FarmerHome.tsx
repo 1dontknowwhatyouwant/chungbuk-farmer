@@ -3,8 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { homeLogo, homeTomato } from "../../../assets/assets";
-import { authApi } from "../../../services/api";
-import { farmProfileApi, type FarmProfile } from "../../../services/api";
+import { farmProfileApi, authApi, type FarmProfile, type User } from "../../../services/api";
 import { useAuthStore } from "../../../stores/useAuthStore";
 
 const notices = [
@@ -16,6 +15,8 @@ const notices = [
 export default function FarmerHome() {
   const router = useRouter();
   const logout = useAuthStore((state) => state.logout);
+  const storedUser = useAuthStore((state) => state.user);
+  const [user, setUser] = useState<User | null>(storedUser);
   const [profile, setProfile] = useState<FarmProfile | null>(null);
   useEffect(() => { void farmProfileApi.get().then(({ data }) => setProfile(data)).catch(() => undefined); }, []);
   const handleLogout = async () => {
@@ -23,10 +24,17 @@ export default function FarmerHome() {
     finally { logout(); router.replace("/login"); }
   };
   const handleDeleteAccount = async () => {
-    const password = window.prompt("탈퇴를 진행하려면 현재 비밀번호를 입력해 주세요.");
+    const password = window.prompt(
+      "탈퇴를 진행하려면 현재 비밀번호를 입력해 주세요.",
+    );
     if (!password) return;
-    try { await authApi.withdrawal(password); logout(); router.push("/login"); }
-    catch { window.alert("계정 삭제에 실패했습니다. 비밀번호를 확인해 주세요."); }
+    try {
+      await authApi.withdrawal(password);
+      logout();
+      router.push("/login");
+    } catch {
+      window.alert("계정 삭제에 실패했습니다. 비밀번호를 확인해 주세요.");
+    }
   };
   return (
     <main className="min-h-screen bg-[#1f1f1f] sm:flex sm:justify-center sm:px-4 sm:py-8">
@@ -55,15 +63,25 @@ export default function FarmerHome() {
         </div>
         <div className="mx-auto mt-[18px] rounded-xl border border-[#e4e4e4] bg-white px-[14px] py-[12px] text-black">
           <div className="flex items-center justify-between">
-            <span className="text-[18px]">{profile?.farmName || "씩씩 농가"}</span>
-            <button type="button" onClick={() => router.push("/farmer-mypage")} className="rounded-full bg-[#d6eba1] px-7 py-2 text-sm">
+            <span className="text-[18px]">
+              {profile?.farmName || (user?.name ? `${user.name} 농가` : "농가 정보 없음")}
+            </span>
+            <button
+              type="button"
+              onClick={() => router.push("/farmer-mypage")}
+              className="rounded-full bg-[#d6eba1] px-7 py-2 text-sm"
+            >
               수정하기
             </button>
           </div>
-          <div className="mt-1 text-xs text-[#424242]">{profile?.farmAddress || "충남 서산시 동문동"}</div>
+          <div className="mt-1 text-xs text-[#424242]">
+            {profile?.farmAddress || user?.address || "주소 정보 없음"}
+          </div>
           <div className="mt-3 flex justify-between text-xs text-[#424242]">
-            <span>{profile?.contactNumber || "010 - 2222 - 3333"}</span>
-            <span>주요 작물　 {profile?.crops.join(",") || "감자,토마토"}</span>
+            <span>{profile?.contactNumber || user?.phoneNumber || "연락처 정보 없음"}</span>
+            <span>
+              주요 작물　{profile?.crops?.length ? profile.crops.join(", ") : "등록된 작물 없음"}
+            </span>
           </div>
         </div>
         <h1 className="mt-5 text-2xl">공고현황</h1>
