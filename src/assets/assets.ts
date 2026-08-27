@@ -23,6 +23,13 @@ import homeAccountOn from "./images/home/accountOn.png";
 import homeAccountOff from "./images/home/accountOff.png";
 import homeAlarm from "./images/home/alarm.png";
 import homeLogo from "./images/home/chungbuk-farmer-logo.svg";
+import centerHomeApplicationDocument from "./images/center-home/application-document.svg";
+import centerHomeApplicationGear from "./images/center-home/application-gear.svg";
+import centerHomeData from "./images/center-home/data.svg";
+import centerHomeHome from "./images/center-home/home.svg";
+import centerHomeLogo from "./images/center-home/logo.svg";
+import centerHomeOperations from "./images/center-home/operations.svg";
+import centerHomePostingReview from "./images/center-home/posting-review.svg";
 
 export {
   naver,
@@ -50,4 +57,11 @@ export {
   homeAccountOff,
   homeAlarm,
   homeLogo,
+  centerHomeApplicationDocument,
+  centerHomeApplicationGear,
+  centerHomeData,
+  centerHomeHome,
+  centerHomeLogo,
+  centerHomeOperations,
+  centerHomePostingReview,
 };

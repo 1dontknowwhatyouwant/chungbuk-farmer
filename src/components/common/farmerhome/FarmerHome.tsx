@@ -18,7 +18,10 @@ export default function FarmerHome() {
   const logout = useAuthStore((state) => state.logout);
   const [profile, setProfile] = useState<FarmProfile | null>(null);
   useEffect(() => { void farmProfileApi.get().then(({ data }) => setProfile(data)).catch(() => undefined); }, []);
-  const handleLogout = () => { logout(); void authApi.logout().catch(() => undefined); router.push("/login"); };
+  const handleLogout = async () => {
+    try { await authApi.logout(); }
+    finally { logout(); router.replace("/login"); }
+  };
   const handleDeleteAccount = async () => {
     const password = window.prompt("탈퇴를 진행하려면 현재 비밀번호를 입력해 주세요.");
     if (!password) return;
@@ -37,7 +40,7 @@ export default function FarmerHome() {
           className="absolute left-6 top-[58px] h-[38px] w-[86px] object-contain"
         />
         <div className="absolute right-5 top-[66px] flex gap-3 text-[11px] text-[#424242]">
-          <button type="button" className="border-0 bg-transparent p-0" onClick={handleLogout}>로그아웃</button>
+          <button type="button" className="border-0 bg-transparent p-0" onClick={() => void handleLogout()}>로그아웃</button>
           <button type="button" className="border-0 bg-transparent p-0 text-[#858282]" onClick={handleDeleteAccount}>계정 삭제</button>
         </div>
         <div

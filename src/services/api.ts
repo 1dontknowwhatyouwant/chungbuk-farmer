@@ -21,7 +21,8 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-export type UserType = 'URBAN_FARMER' | 'FARM';
+export type UserType = 'URBAN_FARMER' | 'FARM' | 'CENTER_ADMIN';
+export type PublicSignupUserType = Exclude<UserType, 'CENTER_ADMIN'>;
 
 export type User = {
   id: number;
@@ -43,7 +44,7 @@ export type LoginResponse = {
 
 export const authApi = {
   checkId: (loginId: string) => api.get<{ loginId: string; available: boolean }>('/api/auth/check-id', { params: { loginId } }),
-  signup: (payload: { loginId: string; password: string; name: string; userType: UserType }) => api.post<User>('/api/auth/signup', payload, { headers: { 'Content-Type': 'application/json' } }),
+  signup: (payload: { loginId: string; password: string; name: string; userType: PublicSignupUserType }) => api.post<User>('/api/auth/signup', payload, { headers: { 'Content-Type': 'application/json' } }),
   login: (loginId: string, password: string) => api.post<LoginResponse>('/api/auth/login', { loginId, password }, { headers: { 'Content-Type': 'application/json' } }),
   me: () => api.get<User>('/api/auth/me'),
   logout: () => api.post('/api/auth/logout'),
@@ -61,3 +62,175 @@ export const farmProfileApi = {
 export type PublicJobPosting = { id: number; farmProfileId: number; farmName: string; cityCounty: string; crop: string; workType: string; workDate: string; startTime: string; endTime: string; capacity: number; meetingPlace: string; supplies: string | null; precautions: string | null; farmMessage: string | null; applicantPreference: string | null; beginnerGuide: string | null; approvedAt: string; wageAmount: number; wageUnit: 'HOURLY' | 'DAILY'; title: string; description: string; recruitmentStatus: 'OPEN' | 'CLOSED'; acceptingApplications: boolean; myApplication: { applicationId: number; status: string } | null; };
 export type JobPostingListResponse = { content: PublicJobPosting[]; page: number; size: number; totalElements: number; totalPages: number; hasNext: boolean; };
 export const jobPostingApi = { list: (params?: { keyword?: string; region?: string; crop?: string; dateFrom?: string; dateTo?: string; workType?: string; recruitmentStatus?: 'OPEN' | 'CLOSED' | 'ALL'; page?: number; size?: number }) => api.get<JobPostingListResponse>('/api/job-postings', { params }), get: (id: number | string, includeClosed = false) => api.get<PublicJobPosting>(`/api/job-postings/${id}`, { params: { includeClosed } }) };
+
+export type PageResponse<T> = {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  hasNext: boolean;
+};
+
+export type AdminDashboard = {
+  submittedParticipationApplications: number;
+  pendingEducationSubmissions: number;
+  pendingFarmOwnershipSubmissions: number;
+  pendingJobPostings: number;
+  openJobPostings: number;
+  pendingJobApplications: number;
+  scheduledWorkAssignments: number;
+  completedWorkAssignments: number;
+  activeUrbanFarmerCount: number;
+  activeFarmCount: number;
+  activeCenterAdminCount: number;
+};
+
+export type ParticipationApplicationStatus =
+  | 'DRAFT'
+  | 'SUBMITTED'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'CANCELLED';
+
+export type ParticipationApplication = {
+  id: number;
+  urbanFarmerId: number;
+  urbanFarmerName: string;
+  programYear: number;
+  agriculturalBusinessRegistered: boolean;
+  applicationNote?: string | null;
+  status: ParticipationApplicationStatus;
+  reviewedByUserId?: number | null;
+  rejectionReason?: string | null;
+  submittedAt?: string | null;
+  reviewedAt?: string | null;
+  cancelledAt?: string | null;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type EducationDocument = {
+  id: number;
+  displayOrder: number;
+  originalFilename: string;
+  contentType: string;
+  sizeBytes: number;
+  sha256: string;
+  createdAt: string;
+};
+
+export type EducationSubmission = {
+  id: number;
+  certificationId: number;
+  urbanFarmerId: number;
+  urbanFarmerName: string;
+  courseId: number;
+  courseTitle: string;
+  requiredHoursSnapshot: number;
+  attemptNumber: number;
+  completionDate: string;
+  completionHours: number;
+  status: 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED';
+  reviewedByUserId?: number | null;
+  reviewedAt?: string | null;
+  recognizedHours?: number | null;
+  rejectionReason?: string | null;
+  documents: EducationDocument[];
+  version: number;
+  submittedAt: string;
+};
+
+export type AdminJobPosting = {
+  id: number;
+  farmProfileId: number;
+  farmName: string;
+  cityCounty: string;
+  farmAddress: string;
+  contactNumber: string;
+  crop: string;
+  workType: string;
+  workDate: string;
+  startTime: string;
+  endTime: string;
+  capacity: number;
+  meetingPlace: string;
+  wageAmount: number;
+  wageUnit: 'HOURLY' | 'DAILY';
+  supplies?: string | null;
+  precautions?: string | null;
+  farmMessage?: string | null;
+  applicantPreference?: string | null;
+  title: string;
+  description: string;
+  beginnerGuide?: string | null;
+  status: string;
+  displayStatus: string;
+  reviewRequestedAt?: string | null;
+  approvedAt?: string | null;
+  closedAt?: string | null;
+  cancelledAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  latestReviewAction?: string | null;
+  latestReviewReason?: string | null;
+  latestReviewedAt?: string | null;
+};
+
+export type WorkAssignment = {
+  id: number;
+  jobPostingId: number;
+  jobApplicationId: number;
+  urbanFarmerUserId: number;
+  urbanFarmerName: string;
+  farmName: string;
+  farmAddress: string;
+  farmContactNumber: string;
+  crop: string;
+  workType: string;
+  workDate: string;
+  startTime: string;
+  endTime: string;
+  recruitmentCapacity: number;
+  meetingPlace: string;
+  wageAmount: number;
+  wageUnit: 'HOURLY' | 'DAILY';
+  supplies?: string | null;
+  precautions?: string | null;
+  status: string;
+  attendanceStatus: string;
+  completedAt?: string | null;
+};
+
+export const centerAdminApi = {
+  dashboard: () => api.get<AdminDashboard>('/api/admin/dashboard'),
+  participationApplications: () =>
+    api.get<ParticipationApplication[]>('/api/admin/participation-applications'),
+  participationApplication: (id: number) =>
+    api.get<ParticipationApplication>(`/api/admin/participation-applications/${id}`),
+  approveParticipation: (id: number) =>
+    api.post<ParticipationApplication>(`/api/admin/participation-applications/${id}/approve`),
+  rejectParticipation: (id: number, reason: string) =>
+    api.post<ParticipationApplication>(`/api/admin/participation-applications/${id}/reject`, { reason }),
+  educationSubmissions: (params?: { page?: number; size?: number }) =>
+    api.get<PageResponse<EducationSubmission>>('/api/admin/education/submissions', { params }),
+  educationSubmission: (id: number) =>
+    api.get<EducationSubmission>(`/api/admin/education/submissions/${id}`),
+  approveEducation: (id: number, recognizedHours: number) =>
+    api.post<EducationSubmission>(`/api/admin/education/submissions/${id}/approve`, { recognizedHours }),
+  rejectEducation: (id: number, reason: string) =>
+    api.post<EducationSubmission>(`/api/admin/education/submissions/${id}/reject`, { reason }),
+  educationDocument: (submissionId: number, documentId: number) =>
+    api.get<Blob>(`/api/admin/education/submissions/${submissionId}/documents/${documentId}`, {
+      responseType: 'blob',
+    }),
+  jobPostings: (params?: { page?: number; size?: number }) =>
+    api.get<PageResponse<AdminJobPosting>>('/api/admin/job-postings', { params }),
+  approveJobPosting: (id: number) =>
+    api.post<AdminJobPosting>(`/api/admin/job-postings/${id}/approve`),
+  rejectJobPosting: (id: number, reason: string) =>
+    api.post<AdminJobPosting>(`/api/admin/job-postings/${id}/reject`, { reason }),
+  workAssignments: (params?: { status?: string; page?: number; size?: number }) =>
+    api.get<PageResponse<WorkAssignment>>('/api/admin/work-assignments', { params }),
+};
