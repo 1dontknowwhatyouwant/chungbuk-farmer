@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --center-card-gap: 20px;
+  }
+
   body {
     margin: 0;
     font-family:

@@ -17,6 +17,13 @@ import homeAnnouncementOff from "./images/home/announcementOff.png";
 import homeAccountOn from "./images/home/accountOn.png";
 import homeAccountOff from "./images/home/accountOff.png";
 import homeLogo from "./images/home/chungbuk-farmer-logo.svg";
+import centerHomeApplicationDocument from "./images/center-home/application-document.svg";
+import centerHomeApplicationGear from "./images/center-home/application-gear.svg";
+import centerHomeData from "./images/center-home/data.svg";
+import centerHomeHome from "./images/center-home/home.svg";
+import centerHomeLogo from "./images/center-home/logo.svg";
+import centerHomeOperations from "./images/center-home/operations.svg";
+import centerHomePostingReview from "./images/center-home/posting-review.svg";
 
 export {
   chungbukFarmerLogo,
@@ -38,4 +45,11 @@ export {
   homeAccountOn,
   homeAccountOff,
   homeLogo,
+  centerHomeApplicationDocument,
+  centerHomeApplicationGear,
+  centerHomeData,
+  centerHomeHome,
+  centerHomeLogo,
+  centerHomeOperations,
+  centerHomePostingReview,
 };

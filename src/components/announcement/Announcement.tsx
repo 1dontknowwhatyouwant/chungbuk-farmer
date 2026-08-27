@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppIcon from "../common/icon/AppIcon";
+import LoadingIndicator from "../common/LoadingIndicator";
 import { jobPostingApi, type PublicJobPosting } from "../../services/api";
 type StatusFilter = "OPEN" | "CLOSED" | "ALL";
 const labels: Record<StatusFilter, string> = {
@@ -100,9 +101,7 @@ export default function Announcement() {
             총 {total}건의 공고가 있습니다.
           </p>
           {loading && (
-            <p className="py-8 text-center text-sm text-[#777]">
-              공고를 불러오는 중입니다.
-            </p>
+            <LoadingIndicator label="공고 목록을 불러오는 중입니다." className="py-8" />
           )}
           {error && (
             <p className="py-8 text-center text-sm text-[#b44]">{error}</p>

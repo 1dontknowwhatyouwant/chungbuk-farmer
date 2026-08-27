@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Button from "../common/button/Button";
-import { authApi, type UserType } from "../../services/api";
+import { authApi, type PublicSignupUserType } from "../../services/api";
 
 const pageClass =
   "min-h-screen bg-[#1f1f1f] text-[#251f1f] sm:flex sm:items-center sm:justify-center sm:px-4 sm:py-8";
@@ -10,8 +10,8 @@ const screenClass =
   "relative mx-auto h-[874px] w-full max-w-[402px] overflow-hidden bg-gradient-to-b from-[#d9e9ed] to-white to-[95%] px-[25px] pt-[57px] shadow-2xl";
 
 const roleButtons = [
-  { label: "농가", userType: "FARM" as UserType },
-  { label: "교육이수자", userType: "URBAN_FARMER" as UserType },
+  { label: "농가", userType: "FARM" as PublicSignupUserType },
+  { label: "교육이수자", userType: "URBAN_FARMER" as PublicSignupUserType },
 ];
 const roleButtonProps = {
   width: "138px",
@@ -26,7 +26,7 @@ const roleButtonProps = {
 };
 
 interface RegisterDetailProps {
-  onComplete?: (userType: UserType) => void;
+  onComplete?: (userType: PublicSignupUserType) => void;
   onBackToRegister?: () => void;
 }
 
@@ -34,7 +34,7 @@ function RegisterDetail({ onComplete, onBackToRegister }: RegisterDetailProps) {
   const [errorMessage, setErrorMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleRoleClick = async (userType: UserType) => {
+  const handleRoleClick = async (userType: PublicSignupUserType) => {
     setErrorMessage("");
     setIsSaving(true);
 
@@ -84,10 +84,10 @@ function RegisterDetail({ onComplete, onBackToRegister }: RegisterDetailProps) {
         </h1>
 
         <p className="mt-[22px] w-[273px] text-[14px] leading-normal text-[#41b3e0]">
-          교육이수자, 농가 중에 선택해주세요
+          교육이수자 또는 농가 중에 선택해주세요
           <br />
           <span className="font-medium text-[#269dcd]">
-            교육 이수자 제외 인증이 필요합니다.
+            농가는 별도의 인증이 필요합니다.
           </span>
         </p>
         <div className="mt-[2px] h-px w-[198px] bg-[#269dcd]" />

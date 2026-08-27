@@ -18,33 +18,10 @@ export default function FarmerHome() {
   const storedUser = useAuthStore((state) => state.user);
   const [user, setUser] = useState<User | null>(storedUser);
   const [profile, setProfile] = useState<FarmProfile | null>(null);
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadUserData = async () => {
-      const [userResult, profileResult] = await Promise.allSettled([
-        authApi.me(),
-        farmProfileApi.get(),
-      ]);
-
-      if (cancelled) return;
-      if (userResult.status === "fulfilled") setUser(userResult.value.data);
-      if (profileResult.status === "fulfilled") setProfile(profileResult.value.data);
-    };
-
-    void loadUserData();
-    window.addEventListener("focus", loadUserData);
-    window.addEventListener("pageshow", loadUserData);
-    return () => {
-      cancelled = true;
-      window.removeEventListener("focus", loadUserData);
-      window.removeEventListener("pageshow", loadUserData);
-    };
-  }, []);
-  const handleLogout = () => {
-    logout();
-    void authApi.logout().catch(() => undefined);
-    router.push("/login");
+  useEffect(() => { void farmProfileApi.get().then(({ data }) => setProfile(data)).catch(() => undefined); }, []);
+  const handleLogout = async () => {
+    try { await authApi.logout(); }
+    finally { logout(); router.replace("/login"); }
   };
   const handleDeleteAccount = async () => {
     const password = window.prompt(
@@ -71,20 +48,8 @@ export default function FarmerHome() {
           className="absolute left-6 top-[58px] h-[38px] w-[86px] object-contain"
         />
         <div className="absolute right-5 top-[66px] flex gap-3 text-[11px] text-[#424242]">
-          <button
-            type="button"
-            className="border-0 bg-transparent p-0"
-            onClick={handleLogout}
-          >
-            로그아웃
-          </button>
-          <button
-            type="button"
-            className="border-0 bg-transparent p-0 text-[#858282]"
-            onClick={handleDeleteAccount}
-          >
-            계정 삭제
-          </button>
+          <button type="button" className="border-0 bg-transparent p-0" onClick={() => void handleLogout()}>로그아웃</button>
+          <button type="button" className="border-0 bg-transparent p-0 text-[#858282]" onClick={handleDeleteAccount}>계정 삭제</button>
         </div>
         <div
           className="mx-auto mt-[92px] h-[104px] w-[242px] rounded-xl bg-[#4e3a29] shadow-inner"
