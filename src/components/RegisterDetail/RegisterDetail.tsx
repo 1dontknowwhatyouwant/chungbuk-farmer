@@ -41,7 +41,12 @@ function RegisterDetail({ onComplete, onBackToRegister }: RegisterDetailProps) {
     try {
       const pendingUser = window.localStorage.getItem("chungbuk-farmer-pending-user");
       if (!pendingUser) throw new Error("pending user not found");
-      const parsed = JSON.parse(pendingUser) as { loginId: string; name: string; password: string };
+      const parsed = JSON.parse(pendingUser) as {
+        loginId: string;
+        name: string;
+        password: string;
+        phoneNumber?: string;
+      };
       await authApi.signup({ ...parsed, userType });
       window.localStorage.removeItem("chungbuk-farmer-pending-user");
       onComplete?.(userType);
