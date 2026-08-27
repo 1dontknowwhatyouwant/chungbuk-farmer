@@ -43,7 +43,7 @@ export type LoginResponse = {
 
 export const authApi = {
   checkId: (loginId: string) => api.get<{ loginId: string; available: boolean }>('/api/auth/check-id', { params: { loginId } }),
-  signup: (payload: { loginId: string; password: string; name: string; userType: UserType }) => api.post<User>('/api/auth/signup', payload, { headers: { 'Content-Type': 'application/json' } }),
+  signup: (payload: { loginId: string; password: string; name: string; phoneNumber?: string; userType: UserType }) => api.post<User>('/api/auth/signup', payload, { headers: { 'Content-Type': 'application/json' } }),
   login: (loginId: string, password: string) => api.post<LoginResponse>('/api/auth/login', { loginId, password }, { headers: { 'Content-Type': 'application/json' } }),
   me: () => api.get<User>('/api/auth/me'),
   logout: () => api.post('/api/auth/logout'),
