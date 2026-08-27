@@ -61,3 +61,57 @@ export const farmProfileApi = {
 export type PublicJobPosting = { id: number; farmProfileId: number; farmName: string; cityCounty: string; crop: string; workType: string; workDate: string; startTime: string; endTime: string; capacity: number; meetingPlace: string; supplies: string | null; precautions: string | null; farmMessage: string | null; applicantPreference: string | null; beginnerGuide: string | null; approvedAt: string; wageAmount: number; wageUnit: 'HOURLY' | 'DAILY'; title: string; description: string; recruitmentStatus: 'OPEN' | 'CLOSED'; acceptingApplications: boolean; myApplication: { applicationId: number; status: string } | null; };
 export type JobPostingListResponse = { content: PublicJobPosting[]; page: number; size: number; totalElements: number; totalPages: number; hasNext: boolean; };
 export const jobPostingApi = { list: (params?: { keyword?: string; region?: string; crop?: string; dateFrom?: string; dateTo?: string; workType?: string; recruitmentStatus?: 'OPEN' | 'CLOSED' | 'ALL'; page?: number; size?: number }) => api.get<JobPostingListResponse>('/api/job-postings', { params }), get: (id: number | string, includeClosed = false) => api.get<PublicJobPosting>(`/api/job-postings/${id}`, { params: { includeClosed } }) };
+
+export type MarketPrice = {
+  crop: string;
+  today: number | string;
+  yesterday: number | string;
+  unit?: string;
+};
+
+export const marketPriceApi = {
+  list: (crops?: string[]) =>
+    api.get<MarketPrice[]>('/api/market-prices', {
+      params: crops?.length ? { crops: crops.join(',') } : undefined,
+    }),
+};
+
+export type EducationProgressStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
+
+export type EducationCourse = {
+  courseId: number;
+  title: string;
+  description: string;
+  requiredHours: number;
+  externalApplicationUrl: string | null;
+  mandatory: boolean;
+  latestSubmissionStatus: string | null;
+  latestSubmissionId: number | null;
+  attemptNumber: number | null;
+  recognizedHours: number | null;
+  rejectionReason: string | null;
+  submittedAt: string | null;
+  progressStatus: EducationProgressStatus;
+  totalMinutes: number;
+  completedMinutes: number;
+  remainingMinutes: number;
+  progressPercentage: number;
+  startedAt: string | null;
+  completedAt: string | null;
+  progressUpdatedAt: string | null;
+  lastSyncedAt: string | null;
+};
+
+export type EducationCertification = {
+  status: string;
+  eligibleToApply: boolean;
+  approvedRequiredCourseCount: number;
+  requiredCourseCount: number;
+  recognizedHours: number;
+  courses: EducationCourse[];
+};
+
+export const educationApi = {
+  getCertification: () =>
+    api.get<EducationCertification>('/api/urban-farmers/me/education-certification'),
+};
