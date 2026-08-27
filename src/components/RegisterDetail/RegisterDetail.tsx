@@ -79,7 +79,7 @@ function RegisterDetail({ onComplete, onBackToRegister }: RegisterDetailProps) {
         </h1>
 
         <p className="mt-[22px] w-[273px] text-[14px] leading-normal text-[#41b3e0]">
-          교육이수자,농가,중개센터 중에 선택해주세요
+          교육이수자, 농가 중에 선택해주세요
           <br />
           <span className="font-medium text-[#269dcd]">
             교육 이수자 제외 인증이 필요합니다.
