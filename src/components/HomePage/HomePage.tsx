@@ -7,6 +7,7 @@ export default function HomePage() {
     <Home
       onGoToMypage={() => router.push("/mypage")}
       onGoToAnnouncement={() => router.push("/announcement")}
+      onGoToWorkCondition={() => router.push("/work-condition")}
     />
   );
 }
