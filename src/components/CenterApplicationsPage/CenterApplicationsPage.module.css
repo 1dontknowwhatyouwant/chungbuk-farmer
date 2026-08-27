@@ -28,7 +28,7 @@
 .filters { display: flex; justify-content: center; gap: 12px; margin-top: 20px; padding: 0 16px 10px; border-bottom: 1px solid #dce5e8; }
 .filters button { min-width: 62px; height: 34px; border: 1px solid #cddce7; border-radius: 18px; font-size: 14px; }
 .filters button[aria-pressed="true"] { border-color: #bfcbde; background: #bfcbde; }
-.list { width: calc(100% - 48px); max-width: 302px; margin: 18px auto 0; display: grid; gap: 16px; }
+.list { width: calc(100% - 48px); max-width: 302px; margin: 18px auto 0; display: grid; gap: 20px; }
 .card { position: relative; min-height: 238px; border-radius: 12px; padding: 30px 24px 12px; overflow-wrap: anywhere; }
 .pending { background: #cfcfcf; }
 .approved { background: #d1f7af; }

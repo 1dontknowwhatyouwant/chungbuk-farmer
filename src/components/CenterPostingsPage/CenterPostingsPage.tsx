@@ -111,7 +111,7 @@ export default function CenterPostingsPage() {
               <article key={posting.id} className={`${styles.card} ${styles[state]}`} aria-label={`${posting.farmName} ${postingStatusLabel(posting)}`}>
                 <span className={styles.status}>{postingStatusLabel(posting)}</span>
                 <button type="button" className={styles.cardHeading} onClick={() => setDetail(posting)} aria-label={`${posting.farmName} 공고 상세 검토`}>
-                  <h2>{posting.farmName}</h2><span>{posting.title}</span>
+                  <h2>{posting.farmName}</h2><span>{workType === "전체" ? posting.title : `${workType} 보조`}</span>
                 </button>
                 <dl className={styles.facts}>
                   <div><dt>작업일:</dt><dd>{formatWorkDate(posting.workDate)}</dd></div>
