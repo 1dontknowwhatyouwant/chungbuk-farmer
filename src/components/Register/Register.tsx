@@ -2,24 +2,13 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import {
-  apple,
   chungbukFarmerLogo,
-  kakao,
-  naver,
-  signupEllipseWide,
   signupEye,
   signupMountainLarge,
   signupMountainSmall,
 } from "../../assets/assets";
 import Button from "../common/button/Button";
 import { authApi } from "../../services/api";
-
-const socialButtons = [
-  { label: "네이버로 회원가입", image: naver.src },
-  { label: "카카오로 회원가입", image: kakao.src },
-  { label: "Apple로 회원가입", image: apple.src },
-  { label: "추가 회원가입", image: signupEllipseWide.src },
-];
 
 const pageClass =
   "min-h-screen bg-[#1f1f1f] text-[#251f1f] sm:flex sm:items-center sm:justify-center sm:px-4 sm:py-8";
@@ -56,6 +45,7 @@ function Register({ onLoginClick, onRegisterComplete }: RegisterProps) {
   const [showLogo, setShowLogo] = useState(false);
   const [loginId, setLoginId] = useState("");
   const [name, setName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [agreed, setAgreed] = useState(false);
@@ -103,7 +93,10 @@ function Register({ onLoginClick, onRegisterComplete }: RegisterProps) {
         return;
       }
 
-      window.localStorage.setItem("chungbuk-farmer-pending-user", JSON.stringify({ loginId, name, password }));
+      window.localStorage.setItem(
+        "chungbuk-farmer-pending-user",
+        JSON.stringify({ loginId, name, password, phoneNumber: phoneNumber || undefined }),
+      );
       setSuccessMessage("추가 정보를 선택해 주세요.");
       onRegisterComplete?.();
     } catch {
@@ -146,6 +139,20 @@ function Register({ onLoginClick, onRegisterComplete }: RegisterProps) {
                 placeholder="영문 소문자·숫자·밑줄 4~30자"
                 pattern="[a-z0-9_]{4,30}"
                 required
+                className={inputClass}
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-[14px] block text-[16px] font-medium text-[#595252]">
+                전화번호 <span className="text-[12px] font-normal text-[#756b6b]">(선택)</span>
+              </span>
+              <input
+                type="tel"
+                value={phoneNumber}
+                onChange={(event) => setPhoneNumber(event.target.value)}
+                placeholder="전화번호를 입력해 주세요"
+                maxLength={20}
                 className={inputClass}
               />
             </label>
@@ -255,19 +262,6 @@ function Register({ onLoginClick, onRegisterComplete }: RegisterProps) {
           >
             로그인
           </button>
-        </div>
-
-        <div className="relative z-10 mt-[43px] flex justify-between px-[20px] max-[360px]:px-0">
-          {socialButtons.map((item) => (
-            <button
-              key={item.label}
-              type="button"
-              aria-label={item.label}
-              className="flex h-[64px] w-[64px] cursor-pointer items-center justify-center rounded-full border-0 bg-transparent p-0"
-            >
-              <img src={item.image} alt="" className="h-full w-full" />
-            </button>
-          ))}
         </div>
 
         <img
