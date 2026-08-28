@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import logo from "../assets/images/login/chungbuk-farmer-logo.svg";
 
 export const metadata: Metadata = {
-  title: "충북 농부",
-  description: "충북 농부 서비스",
+  title: "도시농부+",
+  description: "도시농부플러스 서비스",
+  icons: {
+    icon: logo.src,
+    shortcut: logo.src,
+    apple: logo.src,
+  },
 };
 
 export default function RootLayout({
