@@ -6,9 +6,9 @@ export const metadata: Metadata = {
   title: "도시농부+",
   description: "도시농부플러스 서비스",
   icons: {
-    icon: "/icon.svg",
-    shortcut: "/icon.svg",
-    apple: "/icon.svg",
+    icon: logo.src,
+    shortcut: logo.src,
+    apple: logo.src,
   },
 };
 
