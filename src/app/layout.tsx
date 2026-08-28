@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import logo from "../assets/images/login/chungbuk-farmer-logo.svg";
+import AuthBoundary from "../components/auth/AuthBoundary";
 
 export const metadata: Metadata = {
   title: "도시농부+",
@@ -19,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body><AuthBoundary>{children}</AuthBoundary></body>
     </html>
   );
 }
