@@ -75,6 +75,7 @@ export default function FarmerMypage() {
   const [farmAreaPyeongText, setFarmAreaPyeongText] = useState("1");
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
   const [isFromRegistration, setIsFromRegistration] = useState(false);
 
   useEffect(() => {
@@ -100,7 +101,8 @@ export default function FarmerMypage() {
         setCropsText(data.crops.join(", "));
         setFarmAreaPyeongText(String(data.farmAreaPyeong));
       })
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => setIsProfileLoading(false));
   }, []);
 
   const isLocked = existingProfile?.status === "PENDING_REVIEW" || existingProfile?.status === "INACTIVE";
@@ -153,6 +155,7 @@ export default function FarmerMypage() {
         ? await farmProfileApi.update(payload)
         : await farmProfileApi.create(payload);
       setExistingProfile(data);
+      router.refresh();
       router.push("/farmer-home");
     } catch (error) {
       setMessage(resolveErrorMessage(error));
@@ -170,7 +173,10 @@ export default function FarmerMypage() {
         <header className="relative flex h-[72px] items-center justify-center bg-[#e9ece1] px-[50px]">
           <button
             type="button"
-            onClick={() => router.push("/farmer-home")}
+            onClick={() => {
+              router.refresh();
+              router.push("/farmer-home");
+            }}
             className="absolute left-[25px] border-0 bg-transparent text-2xl text-[#1b1e20]"
           >
             ‹
@@ -195,8 +201,13 @@ export default function FarmerMypage() {
             {statusBanner[existingProfile.status].text(existingProfile)}
           </p>
         )}
+        {isProfileLoading && (
+          <p className="mx-[25px] mt-[14px] break-keep rounded-xl bg-[#eef1f4] px-4 py-3 text-xs text-[#475559]">
+            기존 등록된 정보를 불러오는 중입니다...
+          </p>
+        )}
 
-        <fieldset disabled={isLocked} className="space-y-5 px-[25px] py-[20px] disabled:opacity-60">
+        <fieldset disabled={isLocked || isProfileLoading} className="space-y-5 px-[25px] py-[20px] disabled:opacity-60">
           <div>
             <h2 className="text-[18px] text-[#2c3234]">기본 정보</h2>
             <div className="mt-3 space-y-3">

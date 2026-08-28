@@ -17,6 +17,7 @@ import {
 } from "../../../assets/assets";
 import {
   farmHomeApi,
+  farmProfileApi,
   authApi,
   marketPriceApi,
   type FarmJobPosting,
@@ -57,6 +58,7 @@ export default function FarmerHome() {
   const [profile, setProfile] = useState<FarmProfile | null>(null);
   const [displayCounts, setDisplayCounts] = useState<Partial<Record<JobPostingDisplayStatus, number>>>({});
   const [recentPostings, setRecentPostings] = useState<FarmJobPosting[]>([]);
+  const [isHomeLoading, setIsHomeLoading] = useState(true);
   const [marketPrice, setMarketPrice] = useState<MarketPriceItem | null>(null);
   const [marketPriceStale, setMarketPriceStale] = useState<{ observedDate: string } | null>(null);
   const [cropIndex, setCropIndex] = useState(0);
@@ -81,6 +83,18 @@ export default function FarmerHome() {
         setProfile(homeResult.value.data.farmProfile);
         setDisplayCounts(homeResult.value.data.displayPostingCounts);
         setRecentPostings(homeResult.value.data.recentPostings);
+        setIsHomeLoading(false);
+        return;
+      }
+
+      // farm-home dashboard endpoint failed (e.g. profile not APPROVED yet) - still show the saved profile if one exists
+      try {
+        const { data } = await farmProfileApi.get();
+        if (!cancelled) setProfile(data);
+      } catch {
+        if (!cancelled) setProfile(null);
+      } finally {
+        if (!cancelled) setIsHomeLoading(false);
       }
     };
 
@@ -136,15 +150,18 @@ export default function FarmerHome() {
         <div className="absolute left-[42px] top-[257px] h-[104px] w-[316px] rounded-xl border border-[#e4e4e4] bg-[#fefefe] px-[18px] py-[19px] text-black">
           <div className="flex items-start justify-between">
             <span className="text-[18px] leading-[21px]">
-              {profile?.farmName || (user?.name ? `${user.name} 농가` : "농가 정보 없음")}
+              {isHomeLoading
+                ? "불러오는 중..."
+                : profile?.farmName || (user?.name ? `${user.name} 농가` : "농가 정보 없음")}
             </span>
             <div className="flex items-center gap-[11px]">
               <button
                 type="button"
                 onClick={() => router.push("/farmer-mypage")}
-                className="flex h-[29px] w-[92px] items-center justify-center rounded-[14.5px] bg-[#d6eba1] text-[14px]"
+                disabled={isHomeLoading}
+                className="flex h-[29px] w-[92px] items-center justify-center rounded-[14.5px] bg-[#d6eba1] text-[14px] disabled:opacity-60"
               >
-                {profile ? "수정하기" : "등록하기"}
+                {isHomeLoading ? "확인 중" : profile ? "수정하기" : "등록하기"}
               </button>
               <button type="button" onClick={handleLogout} aria-label="로그아웃">
                 <img src={logoutIcon.src} alt="" className="h-[18px] w-[18px]" />
@@ -152,14 +169,14 @@ export default function FarmerHome() {
             </div>
           </div>
           <div className="mt-1 text-[12px] text-[#424242]">
-            {profile?.farmAddress || user?.address || "주소 정보 없음"}
+            {isHomeLoading ? "···" : profile?.farmAddress || user?.address || "주소 정보 없음"}
           </div>
           <div className="mt-1 flex items-center justify-between text-[12px] text-[#424242]">
-            <span>{profile?.contactNumber || user?.phoneNumber || "연락처 정보 없음"}</span>
+            <span>{isHomeLoading ? "···" : profile?.contactNumber || user?.phoneNumber || "연락처 정보 없음"}</span>
             <span>
               주요 작물　
               <span className="text-[14px] font-medium">
-                {profile?.crops?.length ? profile.crops.join(", ") : "등록된 작물 없음"}
+                {isHomeLoading ? "···" : profile?.crops?.length ? profile.crops.join(", ") : "등록된 작물 없음"}
               </span>
             </span>
           </div>
@@ -175,16 +192,19 @@ export default function FarmerHome() {
               className="absolute top-0 flex h-[76px] w-[82px] flex-col items-center justify-center gap-2 rounded-xl border border-[#e4e4e4] bg-[#fdfffb] text-black"
             >
               <span className="text-[14px] text-[#424242]">{stat.label}</span>
-              <span className="text-[16px]">{displayCounts[stat.key] ?? 0}</span>
+              <span className="text-[16px]">{isHomeLoading ? "-" : displayCounts[stat.key] ?? 0}</span>
             </div>
           ))}
         </div>
 
         <div className="absolute left-[25px] top-[500px] flex w-[352px] flex-col gap-[22px] text-black">
-          {recentPostings.length === 0 && (
+          {isHomeLoading && (
+            <p className="py-6 text-center text-sm text-[#939292]">공고 목록을 불러오는 중입니다...</p>
+          )}
+          {!isHomeLoading && recentPostings.length === 0 && (
             <p className="py-6 text-center text-sm text-[#939292]">아직 등록된 공고가 없습니다.</p>
           )}
-          {recentPostings.map((posting) => (
+          {!isHomeLoading && recentPostings.map((posting) => (
             <div
               key={posting.id}
               className="flex items-center justify-between rounded-xl border border-[#dfe0df] bg-white px-[17px] py-3"
