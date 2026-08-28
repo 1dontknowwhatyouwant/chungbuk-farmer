@@ -2,9 +2,24 @@
 ![image](https://private-user-images.githubusercontent.com/204158185/620539894-f45f5d54-4980-4ba4-aae5-ad3eca3280bc.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3ODc5MDIzNTgsIm5iZiI6MTc4NzkwMjA1OCwicGF0aCI6Ii8yMDQxNTgxODUvNjIwNTM5ODk0LWY0NWY1ZDU0LTQ5ODAtNGJhNC1hYWU1LWFkM2VjYTMyODBiYy5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjYwODI4JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI2MDgyOFQwNzI3MzhaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT00MzA4YmY0MDIyZGY2YWZiMzU3ZjZlMzcwYzc1MzAzZTM3ZjY4NzBiZjAxY2YxMWE1MWVkZmYxNzNkMDQzZmJjJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZyZXNwb25zZS1jb250ZW50LXR5cGU9aW1hZ2UlMkZwbmcifQ.QRE2h4W8z5-FIDcx16leWpMD3b0DCSC1HnueUR4TIFA)
 > 도시농부플러스 프론트엔드 — 병합 및 배포 완료
 
-도시농부플러스는 교육을 이수한 도시농부와 농가를 연결해 농촌 일자리와 농작업 참여 기회를 제공하는 웹 서비스입니다.
+도시농부플러스는 충청북도에서 운영 중인 충북형 도시농부 사업의 신청, 모집, 매칭 과정을 디지털화한 서비스입니다.
 
-도시농부는 구인 공고를 확인하고, 농가는 농가 프로필과 작업 정보를 관리하며, 중개센터 담당자는 신청·공고 처리 현황을 확인할 수 있도록 사용자 유형에 따라 맞춤 화면을 제공합니다.
+현재 도시농부 사업은 농촌의 일손 부족 문제를 해결하기 위한 좋은 정책이지만, 실제 운영 과정에서는 전화, 문자, 수기 관리 중심으로 진행되는 경우가 많습니다.
+
+도시농부는 교육을 이수한 뒤 중개센터에 전화로 신청해야 하고, 농가는 일손이 필요할 때 직접 연락하여 인력을 요청해야 합니다. 이 과정은 참여자에게 번거롭고, 농가 입장에서도 모집 글 작성이나 신청 관리가 어렵다는 문제가 있습니다.
+
+도시농부플러스는 이러한 문제를 해결하기 위해 도시농부와 농가가 플랫폼에서 신청, 모집, 지원자 의견 등록, 근무 정보 확인을 할 수 있도록 돕습니다. 통합 백엔드는 중개센터의 심사·최종 매칭·운영 통계와 규칙 기반 모집 글 작성 지원까지 함께 제공합니다.
+
+---
+## 🎯 프로젝트 목표
+
+* 전화와 문자 중심의 도시농부 신청 절차를 온라인으로 전환
+* 도시농부와 농가가 직접 연결될 수 있는 플랫폼 제공
+* 농가의 일손 모집 글 작성 부담 완화
+* 규칙 기반 모집 공고 문안과 작업 안내 기능 제공
+* 도시농부의 근무 정보 접근성 향상
+* 농촌 일손 부족 문제 해결에 기여
+---
 
 ## 주요 기능
 
