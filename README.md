@@ -1,8 +1,8 @@
-# 충북형 도시농부 🌱
+# 도시농부플러스 🌱
 ![image](https://private-user-images.githubusercontent.com/204158185/620539894-f45f5d54-4980-4ba4-aae5-ad3eca3280bc.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3ODc5MDIzNTgsIm5iZiI6MTc4NzkwMjA1OCwicGF0aCI6Ii8yMDQxNTgxODUvNjIwNTM5ODk0LWY0NWY1ZDU0LTQ5ODAtNGJhNC1hYWU1LWFkM2VjYTMyODBiYy5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjYwODI4JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI2MDgyOFQwNzI3MzhaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT00MzA4YmY0MDIyZGY2YWZiMzU3ZjZlMzcwYzc1MzAzZTM3ZjY4NzBiZjAxY2YxMWE1MWVkZmYxNzNkMDQzZmJjJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZyZXNwb25zZS1jb250ZW50LXR5cGU9aW1hZ2UlMkZwbmcifQ.QRE2h4W8z5-FIDcx16leWpMD3b0DCSC1HnueUR4TIFA)
-> 충북형 도시농부 프론트엔드 — 병합 및 배포 완료
+> 도시농부플러스 프론트엔드 — 병합 및 배포 완료
 
-충북형 도시농부는 교육을 이수한 도시농부와 농가를 연결해 농촌 일자리와 농작업 참여 기회를 제공하는 웹 서비스입니다.
+도시농부플러스는 교육을 이수한 도시농부와 농가를 연결해 농촌 일자리와 농작업 참여 기회를 제공하는 웹 서비스입니다.
 
 도시농부는 구인 공고를 확인하고, 농가는 농가 프로필과 작업 정보를 관리하며, 중개센터 담당자는 신청·공고 처리 현황을 확인할 수 있도록 사용자 유형에 따라 맞춤 화면을 제공합니다.
 
@@ -156,4 +156,4 @@ npm run mock-auth # 인증 목업 서버 실행
 
 ## 라이선스
 
-이 프로젝트는 충북형 도시농부 서비스 구현을 위한 프로젝트입니다.
+이 프로젝트는 도시농부플러스 서비스 구현을 위한 프로젝트입니다.
