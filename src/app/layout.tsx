@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import logo from "../assets/images/login/chungbuk-farmer-logo.svg";
+import logo from "../assets/images/webname/name.png";
 
 export const metadata: Metadata = {
   title: "도시농부+",
